@@ -20,12 +20,17 @@ YOUR LIFE IS CURRENCY
     * damage creatures to weaken them for netting (similar to pokemon)
     * (Optional) we can add a mechanic where the net gets damaged if you attempt to net strong creatures too many times and needs repair ($$$)
 * shrek must return to the guard captain to sell his captured creatures
-* next to the guard captain is a booth where you can buy powerups
+* next to the guard captain is a booth where you can buy powerups (Rumplestiltszkin)
     * Speed Power-up (this one times out)
     * Stealth Power-up (this one times out, turns aggro on sight to passive aggro)
     * Stronger net (nice to have, more durability to the net)
     * Swamp Bubble Power-up (like Sonic 3's bubble, one free hit & *1.5 jump height)
-    * Fairy Dust Power-up (Slow fall speed )
+    * Fairy Dust Power-up (Slow fall speed & adds a double jump whose height is half as much a          normal jump)
+    * 
+* Creatures start relatively passive, just moving about on their own in certain paths
+* Despite their passive behavoir the Creatures will retailiate if attacked by Shrek
+* After a few Creatures have been obtained they become frenized and chase Shrek on sight
+* Shrek has a fixed amount of health, if depleted completely then the game ends
 
 *End goal
 
