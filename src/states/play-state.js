@@ -45,6 +45,8 @@ export default function playState(game) {
 
     // keys
     let SPACE_BAR;
+    let ACTION_KEY;
+    let NET_KEY;
 
     function preload() {
         game.load.image('ground', 'src/assets/ground.png');
@@ -58,6 +60,8 @@ export default function playState(game) {
         game.load.image("store", "src/assets/store.png");
         game.load.image("forestBackground", "src/assets/forestBackground.png");
         game.load.image("storeMenu", "src/assets/menu.png");
+        game.load.image("chop", "src/assets/chop.png");
+        game.load.image("sky", "src/assets/sky.png");
     }
     
     function create() {
@@ -79,9 +83,11 @@ export default function playState(game) {
         // Add a input listener that can help us return from being paused
         game.input.onDown.add(unpause, self);
 
-        //createPause();
         SPACE_BAR = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         SPACE_BAR.onUp.add(toggleStore, this);
+
+        ATTACK_KEY = game.input.keyboard.addKey(Phaser.Keyboard.A);
+        ATTACK_KEY.onUp.add(toggleStore, this);
     }
     
     
@@ -114,6 +120,7 @@ export default function playState(game) {
         for(var i = 0; i < 10; ++i) {
             var x = i * 640;
             var y = game.world.height - 64 - 12- 320;
+            game.add.sprite(x, 0, 'sky');
             game.add.sprite(x, y, 'forestBackground');
         }
         game.add.sprite(STORE_X, STORE_Y, "store");
@@ -217,12 +224,14 @@ export default function playState(game) {
     function updateShrek() {
         var isOnGround = game.physics.arcade.collide(shrek, groundPlatform);
         
+        // shrek can't be controlled if he is being knocked back by an enemy
         if(isShrekHit) {
             if(Math.abs(shrek.x - shrekHitLocationX) > SHREK_KNOCKBACK_DISTANCE || !shrek.body.velocity.x) {
                 isShrekHit = false;
             }
             return;
         }
+
         //  Reset the players velocity (movement)
         shrek.body.velocity.x = 0;
         shrek.body.bounce.y = bouncing ? 0.7 : 0.2;
@@ -231,7 +240,7 @@ export default function playState(game) {
         if (cursors.left.isDown)
         {
             if(!isShrekFacingLeft) {
-                shrek.scale.x *= -1;
+                flipSpriteDirection(shrek); // flips shrek about the y axis
                 isShrekFacingLeft = true;
             }
             //  Move to the left
@@ -241,7 +250,7 @@ export default function playState(game) {
         else if (cursors.right.isDown)
         {
             if(isShrekFacingLeft) {
-                shrek.scale.x *= -1;
+                flipSpriteDirection(shrek); // flips shrek about the y axis
                 isShrekFacingLeft = false;
             }
             //  Move to the right
@@ -266,7 +275,6 @@ export default function playState(game) {
             bouncing = true;
         }
 
-
     }
 
     function moveDonkey() {
@@ -276,7 +284,7 @@ export default function playState(game) {
         donkey.animations.play('donkeyWalk');
         if(Math.random() > 0.98) {
             donkeyDirection *= -1;
-            donkey.scale.x *= -1;
+            flipSpriteDirection(donkey);
         }
     }
 
@@ -292,9 +300,23 @@ export default function playState(game) {
         shrekHitLocationX = enemy.x;
     }
 
+    function animateAction(actionSpriteName) {
+        let actionSprite = game.add.sprite();
+    }
+
     function getDirectionFromVelocity(velocity) {
         return velocity / Math.abs(velocity);
     }
+
+    // flips sprite about the y-axis
+    function flipSpriteDirection(sprite) {
+        sprite.scale.x *= -1
+    }
     
+    function getShrekActionAnchor() {
+        let anchorX = shrek.x - 17;
+        let anchorY = shrek.x - 52;
+    }
+
     return {preload, create, update};
 }
