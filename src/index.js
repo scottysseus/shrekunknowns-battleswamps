@@ -1,16 +1,13 @@
-import fontLoadState from './font-load-state';
-import assetLoadState from './asset-load-state';
-import playState from './play-state'; // initialize the play state in entry state to reset all the variables in play state
-import entryState from './entry-state';
-import aboutState from './about-state';
-import premiseState from './premise-state';
-import gameOverState from './game-over-state';
-import raceRelationsState from './race-relations-state';
-
+import fontLoadState from './states/font-load-state';
+import assetLoadState from './states/asset-load-state';
+import playState from './states/play-state'; // initialize the play state in entry state to reset all the variables in play state
+import entryState from './states/entry-state';
+import aboutState from './states/about-state';
+import premiseState from './states/premise-state';
+import gameOverState from './states/game-over-state';
 import instructionsState from './instructions-state';
-import prisonersInstructionsState from './prisoners-instructions-state';
 
-const game = new Phaser.Game(960, 540, Phaser.AUTO, 'game', undefined, undefined, false);
+const game = new Phaser.Game(640, 512, Phaser.AUTO, 'game', undefined, undefined, false);
 game.state.add('FontLoad', fontLoadState(game));
 game.state.add('AssetLoad', assetLoadState(game));
 game.state.add('Entry', entryState(game));
