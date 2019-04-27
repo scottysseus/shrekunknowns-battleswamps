@@ -1,4 +1,5 @@
 YOUR LIFE IS CURRENCY
+
 # idea 4
 ## SHREK SCENE WHERE THEY SELL FAIRYTALE CREATURES
 
@@ -15,16 +16,17 @@ YOUR LIFE IS CURRENCY
 * shrek must capture fairy tale creatures
     * (Optional) avoid villains of some sort on the way back (similar to terraria)
     * creatures get stronger the more that you capture
+    * creatures frenzy if you capture too many of their type
     * damage creatures to weaken them for netting (similar to pokemon)
     * (Optional) we can add a mechanic where the net gets damaged if you attempt to net strong creatures too many times and needs repair ($$$)
 * shrek must return to the guard captain to sell his captured creatures
 * next to the guard captain is a booth where you can buy powerups
-    * Speed Power-up
-    * Stealth Power-up
-    * Strong net
-    
+    * Speed Power-up (this one times out)
+    * Stealth Power-up (this one times out, turns aggro on sight to passive aggro)
+    * Stronger net (nice to have, more durability to the net)
+    * Swamp Bubble Power-up (like Sonic 3's bubble, one free hit & *1.5 jump height)
+    * Fairy Dust Power-up (Slow fall speed )
 
-    
 *End goal
 
 
@@ -37,3 +39,7 @@ YOUR LIFE IS CURRENCY
 * Fairy Tale Things
 * The Onion Scrolls V: Swamprim
 * Swampraria
+* Wind that Shakes the Onion
+* Swampex: Legends
+* Swampnite
+* ShrekUnknown's BattleSwamps (SUBS)
