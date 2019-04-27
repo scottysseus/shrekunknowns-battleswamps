@@ -5,7 +5,7 @@ export default function aboutState(game) {
 
     let textCrawlStyle = { font: '15px Comic Sans MS', fill: FONT_COLOR, align: 'left', wordWrap: true, wordWrapWidth: game.width-60};
     let textCrawl = 'About\n\n'
-                    + 'Original story, art, music, and gameplay developed by libjared, scottyseus, \njronsomers, and jothamCallaway  for'
+                    + 'Original story, art, music, and gameplay developed by libjared, scottyseus, \njronsomers, and endlessDreamHero  for'
                     + ' Ludum Dare Jam 44.\n\n'
                     + 'Check out the links below:\n\n';
 

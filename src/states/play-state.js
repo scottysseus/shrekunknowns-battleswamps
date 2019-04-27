@@ -7,6 +7,12 @@ export default function playState(game) {
     const GAME_HEIGHT = 512;
     const STORE_X = 650;
     const STORE_Y = GAME_HEIGHT - 310;
+    const w = 640;
+    const h = 512;
+
+    // locations
+    let GROUND_LEVEL;
+
     // game stats
     let level = 1;
 
@@ -18,8 +24,13 @@ export default function playState(game) {
     let shrek;
     const SHREK_BASE_SPEED = 150;
     const SHREK_BASE_JUMP_SPEED = 525;
+    let isShrekHit = false;
+    const SHREK_KNOCKBACK_DISTANCE = 64;
+    const SHREK_KNOCKBACK_SPEED = 2000;
+    let shrekHitLocationX;
 
     let storeUI;
+    let choiceLabel;
     let donkey;
     const DONKEY_BASE_SPEED = 150;
     let donkeyDirection = -1;
@@ -38,7 +49,7 @@ export default function playState(game) {
     function preload() {
         game.load.image('ground', 'src/assets/ground.png');
         game.load.image('groundTop', 'src/assets/groundTop.png');
-        game.load.spritesheet('shrek', 'src/assets/shrek.png', 144/3, 72);
+        game.load.spritesheet('shrek', 'src/assets/shrek.png', 126/3, 72);
         game.load.spritesheet('donkey', 'src/assets/donkey.png', 192/4, 48);
         game.load.image('tree1', 'src/assets/tree1.png');
         game.load.image('tree2', 'src/assets/tree2.png');
@@ -46,13 +57,15 @@ export default function playState(game) {
         game.load.image("berryBush", "src/assets/berryBush.png");
         game.load.image("store", "src/assets/store.png");
         game.load.image("forestBackground", "src/assets/forestBackground.png");
+        game.load.image("storeMenu", "src/assets/menu.png");
     }
     
     function create() {
+        GROUND_LEVEL = game.world.height - 64;
+
         game.world.setBounds(0, 0, 6400, 512);
         game.stage.disableVisibilityChange = true;
         cursors = game.input.keyboard.createCursorKeys();
-        SPACE_BAR = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         addBackgroundScenery();
         addEnemies();
         addShrek();
@@ -62,7 +75,13 @@ export default function playState(game) {
         game.camera.follow(shrek, Phaser.Camera.FOLLOW_LOCKON);
 
         addForegroundScenery();
-        createStore();
+
+        // Add a input listener that can help us return from being paused
+        game.input.onDown.add(unpause, self);
+
+        //createPause();
+        SPACE_BAR = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        SPACE_BAR.onUp.add(toggleStore, this);
     }
     
     
@@ -85,7 +104,7 @@ export default function playState(game) {
         // Here we create the ground.
         for(var i = 0; i < 65; ++i) {
             var x = i * 256;
-            var y = game.world.height - 64;
+            var y = GROUND_LEVEL;
             var ground = groundPlatform.create(x, y, 'ground');
             game.add.sprite(x, y - 32, 'groundTop');
             ground.body.immovable = true;
@@ -102,9 +121,9 @@ export default function playState(game) {
 
     function addShrek() {
         shrek = game.add.sprite(0,0,'shrek');
-        shrek.anchor.setTo(0.5, 0.5);
+        shrek.anchor.setTo(0.5, 1);
         shrek.x = 150;
-        shrek.y = 45;
+        shrek.y = GROUND_LEVEL;
         game.physics.arcade.enable(shrek);
         shrek.body.bounce.y = BOUNCE;
         shrek.body.gravity.y = GRAVITY;
@@ -114,10 +133,10 @@ export default function playState(game) {
 
     function addEnemies() {
         donkey = game.add.sprite(0,0, 'donkey');
-        donkey.anchor.setTo(0.5, 0.5);
+        donkey.anchor.setTo(0.5, 1);
 
         donkey.x = 150;
-        donkey.y = 45;
+        donkey.y = GROUND_LEVEL;
         game.physics.arcade.enable(donkey);
         donkey.body.bounce.y = BOUNCE;
         donkey.body.gravity.y = GRAVITY;
@@ -131,26 +150,83 @@ export default function playState(game) {
         game.add.sprite(500, game.world.height - 270, 'tree2');
         game.add.sprite(800, game.world.height - 284, 'tree3');
         game.add.sprite(100, game.world.height - 125, "berryBush");
-
     }
 
-    function createStore() {
-        storeUI = game.add.graphics(0, 0);
+    function createPause() {
+        let pauseLabel = game.add.text(0, 20, 'Pause', { font: '24px Comic Sans MS', fill: FONT_COLOR });
+        pauseLabel.inputEnabled = true;
+        pauseLabel.events.onInputUp.add(function () {
+            // When the paus button is pressed, we pause the game
+            game.paused = true;
 
-        storeUI.beginFill("#000000", 1);
-        storeUI.drawCircle(300, 300, 100);
-        storeUI.visible = false;
+            // Then add the menu
+            storeUI = game.add.sprite(640/2, 512/2, 'storeMenu');
+            storeUI.anchor.setTo(0.5, 0.5);
+        });
     }
 
-    function interactWithStore() {
-        storeUI.visible = !storeUI.visible;
+    // And finally the method that handles the pause menu
+    function unpause(event) {
+        // Only act if paused
+        if(game.paused){
+            // Calculate the corners of the menu
+            var x1 = w/2 - 270/2, x2 = w/2 + 270/2,
+                y1 = h/2 - 180/2, y2 = h/2 + 180/2;
+
+            // Check if the click was inside the menu
+            if(event.x > x1 && event.x < x2 && event.y > y1 && event.y < y2 ){
+                // The choicemap is an array that will help us see which item was clicked
+                var choicemap = ['one', 'two', 'three', 'four', 'five', 'six'];
+
+                // Get menu local coordinates for the click
+                var x = event.x - x1,
+                    y = event.y - y1;
+
+                // Calculate the choice 
+                var choice = Math.floor(x / 90) + 3*Math.floor(y / 90);
+
+                // Display the choice
+                console.log('You chose menu item: ' + choicemap[choice]);
+            }
+            else {
+                // Remove the menu and the label
+                storeUI.destroy();
+
+                // Unpause the game
+                game.paused = false;
+            }
+        }
+    }
+
+    function toggleStore() {
+        if (shrek.x <= 750 && shrek.x >= 630 && !game.paused) {
+            // When the paus button is pressed, we pause the game
+            game.paused = true;
+
+            // Then add the menu
+            storeUI = game.add.sprite(740, 256, 'storeMenu');
+            storeUI.anchor.setTo(.5, .5);
+        }
+        /*
+        if (storeUI.visible) {
+            pause donkey
+        }
+        */
     }
 
     function updateShrek() {
         var isOnGround = game.physics.arcade.collide(shrek, groundPlatform);
+        
+        if(isShrekHit) {
+            if(Math.abs(shrek.x - shrekHitLocationX) > SHREK_KNOCKBACK_DISTANCE || !shrek.body.velocity.x) {
+                isShrekHit = false;
+            }
+            return;
+        }
         //  Reset the players velocity (movement)
         shrek.body.velocity.x = 0;
         shrek.body.bounce.y = bouncing ? 0.7 : 0.2;
+        game.physics.arcade.overlap(shrek, donkey, onShrekHit, null, this);
 
         if (cursors.left.isDown)
         {
@@ -190,10 +266,7 @@ export default function playState(game) {
             bouncing = true;
         }
 
-        // check if he is interacting with the store
-        if(SPACE_BAR.isDown && shrek.x <= 750 && shrek.x >= 630){ 
-            interactWithStore();
-        }
+
     }
 
     function moveDonkey() {
@@ -204,11 +277,24 @@ export default function playState(game) {
         if(Math.random() > 0.98) {
             donkeyDirection *= -1;
             donkey.scale.x *= -1;
-
         }
-
-
     }
 
+    function onShrekHit(shrek, enemy) {
+        isShrekHit = true;
+        let enemysVelocity = enemy.body.velocity.x;
+        let shreksVelocity = shrek.body.velocity.x;
+        if(!shreksVelocity) {
+            shrek.body.velocity.x = getDirectionFromVelocity(enemysVelocity) * SHREK_KNOCKBACK_SPEED; 
+        } else {
+            shrek.body.velocity.x = getDirectionFromVelocity(shreksVelocity) * -1 * SHREK_KNOCKBACK_SPEED;
+        }
+        shrekHitLocationX = enemy.x;
+    }
+
+    function getDirectionFromVelocity(velocity) {
+        return velocity / Math.abs(velocity);
+    }
+    
     return {preload, create, update};
 }
