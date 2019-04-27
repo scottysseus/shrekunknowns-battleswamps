@@ -1,7 +1,7 @@
 {
-  "name": "due-process",
+  "name": "subs",
   "version": "1.0.0",
-  "description": "A game about justice, integrity, and of course, due process",
+  "description": "ShrekUnknown's BattleSwamps",
   "main": "index.js",
   "repository": "https://github.com/scottyseus/due-process.git",
   "author": "Scott Weidenkopf <sweidenkopf@gmail.com>",

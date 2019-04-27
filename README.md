@@ -22,15 +22,21 @@ YOUR LIFE IS CURRENCY
 * shrek must return to the guard captain to sell his captured creatures
 * next to the guard captain is a booth where you can buy powerups (Rumplestiltszkin)
     * Speed Power-up (this one times out)
-    * Stealth Power-up (this one times out, turns aggro on sight to passive aggro)
+    * Pacify Power-up (this one times out, turns aggro on sight to passive aggro, or gets rid of frenzy)
     * Stronger net (nice to have, more durability to the net)
-    * Swamp Bubble Power-up (like Sonic 3's bubble, one free hit & *1.5 jump height)
+    * Swamp Bubble Power-up (like Sonic 3's bubble, takes one free hit & *1.5 jump height)
     * Fairy Dust Power-up (Slow fall speed & adds a double jump whose height is half as much a          normal jump)
-    * 
+    * Big Fist Power-up (makes Shrek's attacks do more damage and knocks back anyone he hits a sizable distance)
 * Creatures start relatively passive, just moving about on their own in certain paths
 * Despite their passive behavoir the Creatures will retailiate if attacked by Shrek
-* After a few Creatures have been obtained they become frenized and chase Shrek on sight
-* Shrek has a fixed amount of health, if depleted completely then the game ends
+* Shrek must attack the Creatures until they reach a certain threshold of health that makes them   catchable
+* Once that threshold has been reached the Creatures can be caught with one hit of Shrek's net
+* After a certain number of Creatures have been caught they become frenized and chase Shrek on sight
+* Once they have been frenized then their heatlh increases and they attack more offten making them more difficult to catch
+* Shrek has a fixed amount of health, if depleted completely then the game ends and the player loses
+* Each Creature has a gold value attached to them when turned into the vendor 
+* Shrek receives the gold equal to the value assigned to the Creature he turned in when he does so
+* The game ends when Shrek obtains a set amount of gold and the player wins
 
 *End goal
 
