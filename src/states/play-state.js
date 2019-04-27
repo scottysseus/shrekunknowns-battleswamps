@@ -1,8 +1,12 @@
+import {FONT_COLOR} from "../common/constants";
+
 export default function playState(game) {
     
     const GRAVITY = 600*2;
     const BOUNCE = 0.2;
-
+    const GAME_HEIGHT = 512;
+    const STORE_X = 650;
+    const STORE_Y = GAME_HEIGHT - 310;
     // game stats
     let level = 1;
 
@@ -12,7 +16,13 @@ export default function playState(game) {
 
     // characters
     let shrek;
+    const SHREK_BASE_SPEED = 150;
+    const SHREK_BASE_JUMP_SPEED = 525;
+
+    let storeUI;
     let donkey;
+    const DONKEY_BASE_SPEED = 150;
+    let donkeyDirection = -1;
 
     // flags
     let isShrekFacingLeft = true;
@@ -22,6 +32,9 @@ export default function playState(game) {
     let gold;
     let inventory;
 
+    // keys
+    let SPACE_BAR;
+
     function preload() {
         game.load.image('ground', 'src/assets/ground.png');
         game.load.image('groundTop', 'src/assets/groundTop.png');
@@ -29,14 +42,17 @@ export default function playState(game) {
         game.load.spritesheet('donkey', 'src/assets/donkey.png', 192/4, 48);
         game.load.image('tree1', 'src/assets/tree1.png');
         game.load.image('tree2', 'src/assets/tree2.png');
+        game.load.image('tree3', 'src/assets/tree3.png');
         game.load.image("berryBush", "src/assets/berryBush.png");
+        game.load.image("store", "src/assets/store.png");
+        game.load.image("forestBackground", "src/assets/forestBackground.png");
     }
     
     function create() {
         game.world.setBounds(0, 0, 6400, 512);
         game.stage.disableVisibilityChange = true;
         cursors = game.input.keyboard.createCursorKeys();
-        
+        SPACE_BAR = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         addBackgroundScenery();
         addEnemies();
         addShrek();
@@ -46,6 +62,7 @@ export default function playState(game) {
         game.camera.follow(shrek, Phaser.Camera.FOLLOW_LOCKON);
 
         addForegroundScenery();
+        createStore();
     }
     
     
@@ -55,6 +72,7 @@ export default function playState(game) {
     }
 
     function addBackgroundScenery() {
+
         //  The groundPlatform group contains the ground and the 2 ledges we can jump on
         groundPlatform = game.add.group();
             
@@ -62,6 +80,8 @@ export default function playState(game) {
         if (groundPlatform) {
             groundPlatform.enableBody = true;
         }
+
+
         // Here we create the ground.
         for(var i = 0; i < 65; ++i) {
             var x = i * 256;
@@ -71,9 +91,13 @@ export default function playState(game) {
             ground.body.immovable = true;
         }
 
-        game.add.sprite(150, game.world.height - 265, 'tree1');
-        game.add.sprite(300, game.world.height - 330, 'tree2');
-        game.add.sprite(100, game.world.height - 175, "berryBush");
+        // add the forest background
+        for(var i = 0; i < 10; ++i) {
+            var x = i * 640;
+            var y = game.world.height - 64 - 12- 320;
+            game.add.sprite(x, y, 'forestBackground');
+        }
+        game.add.sprite(STORE_X, STORE_Y, "store");
     }
 
     function addShrek() {
@@ -85,8 +109,7 @@ export default function playState(game) {
         shrek.body.bounce.y = BOUNCE;
         shrek.body.gravity.y = GRAVITY;
         shrek.body.collideWorldBounds = true;
-        shrek.animations.add('left', [0, 1, 2], 10, false);
-        shrek.animations.add('right', [0,1,2], 10, false);
+        shrek.animations.add('shrekWalk', [0, 1, 2], 10, false);
     }
 
     function addEnemies() {
@@ -99,12 +122,28 @@ export default function playState(game) {
         donkey.body.bounce.y = BOUNCE;
         donkey.body.gravity.y = GRAVITY;
         donkey.body.collideWorldBounds = true;
-        donkey.animations.add('left', [0, 1, 2, 0], 12, false);
-        donkey.animations.add('right', [0, 1, 2, 0], 12, false);
+        donkey.animations.add('donkeyWalk', [0, 1, 2, 0], 12, false);
     }
 
     function addForegroundScenery() {
+        game.add.sprite(150, game.world.height - 215, 'tree1');
+        game.add.sprite(400, game.world.height - 115, "berryBush");
+        game.add.sprite(500, game.world.height - 270, 'tree2');
+        game.add.sprite(800, game.world.height - 284, 'tree3');
+        game.add.sprite(100, game.world.height - 125, "berryBush");
 
+    }
+
+    function createStore() {
+        storeUI = game.add.graphics(0, 0);
+
+        storeUI.beginFill("#000000", 1);
+        storeUI.drawCircle(300, 300, 100);
+        storeUI.visible = false;
+    }
+
+    function interactWithStore() {
+        storeUI.visible = !storeUI.visible;
     }
 
     function updateShrek() {
@@ -120,8 +159,8 @@ export default function playState(game) {
                 isShrekFacingLeft = true;
             }
             //  Move to the left
-            shrek.body.velocity.x = -150;
-            shrek.animations.play('left');
+            shrek.body.velocity.x = -SHREK_BASE_SPEED;
+            shrek.animations.play('shrekWalk');
         }
         else if (cursors.right.isDown)
         {
@@ -130,8 +169,8 @@ export default function playState(game) {
                 isShrekFacingLeft = false;
             }
             //  Move to the right
-            shrek.body.velocity.x = 150;
-            shrek.animations.play('right');
+            shrek.body.velocity.x = SHREK_BASE_SPEED;
+            shrek.animations.play('shrekWalk');
         } else {
             shrek.frame = 0;
         }
@@ -139,7 +178,7 @@ export default function playState(game) {
         //  Allow the shrek to jump if they are touching the ground.
         if (cursors.up.isDown && shrek.body.touching.down && isOnGround)
         {
-            shrek.body.velocity.y = -350*1.5;
+            shrek.body.velocity.y = -SHREK_BASE_JUMP_SPEED;
         }
 
         // bounce logic
@@ -150,11 +189,25 @@ export default function playState(game) {
             shrek.body.velocity.y = 900*1.25;
             bouncing = true;
         }
+
+        // check if he is interacting with the store
+        if(SPACE_BAR.isDown && shrek.x <= 750 && shrek.x >= 630){ 
+            interactWithStore();
+        }
     }
 
     function moveDonkey() {
         var isOnGround = game.physics.arcade.collide(donkey, groundPlatform);
-        
+
+        donkey.body.velocity.x = DONKEY_BASE_SPEED * donkeyDirection;
+        donkey.animations.play('donkeyWalk');
+        if(Math.random() > 0.98) {
+            donkeyDirection *= -1;
+            donkey.scale.x *= -1;
+
+        }
+
+
     }
 
     return {preload, create, update};

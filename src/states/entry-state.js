@@ -14,7 +14,7 @@ export default function entryState(game) {
             let text = game.add.text(game.world.centerX, 20, "ShrekUnknown's BattleSwamps", titleStyle);
             text.anchor.set(0.5);
 
-            GenericButton(game, 30,30, 'Start', "Play");
+            GenericButton(game, 30,30, 'Start', "Store", "Play");
             GenericButton(game, 30, 50,'About', "About");
         },
 
