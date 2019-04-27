@@ -24,10 +24,11 @@ export default function playState(game) {
     let shrek;
     const SHREK_BASE_SPEED = 150;
     const SHREK_BASE_JUMP_SPEED = 525;
-    let isShrekHit = false;
-    const SHREK_KNOCKBACK_DISTANCE = 64;
-    const SHREK_KNOCKBACK_SPEED = 2000;
-    let shrekHitLocationX;
+    let shrekHitTimer = 0;
+    const SHREK_KNOCKBACK_TIME = 60; // 1 sec
+    const SHREK_KNOCKBACK_SPEED = 200;
+    let actionSprites = {};
+    let actionSpriteNames = ['chop', 'net', 'bigfist'];
 
     let storeUI;
     let choiceLabel;
@@ -53,6 +54,7 @@ export default function playState(game) {
         game.load.image('groundTop', 'src/assets/groundTop.png');
         game.load.spritesheet('shrek', 'src/assets/shrek.png', 126/3, 72);
         game.load.spritesheet('donkey', 'src/assets/donkey.png', 192/4, 48);
+        game.load.spritesheet('fairy', 'src/assets/fairy.png', 56/4, 17);
         game.load.image('tree1', 'src/assets/tree1.png');
         game.load.image('tree2', 'src/assets/tree2.png');
         game.load.image('tree3', 'src/assets/tree3.png');
@@ -60,7 +62,9 @@ export default function playState(game) {
         game.load.image("store", "src/assets/store.png");
         game.load.image("forestBackground", "src/assets/forestBackground.png");
         game.load.image("storeMenu", "src/assets/menu.png");
-        game.load.image("chop", "src/assets/chop.png");
+        game.load.spritesheet("chop", "src/assets/chop.png", 108/3, 38);
+        game.load.spritesheet("net", "src/assets/net.png", 288/3, 108);
+        game.load.spritesheet("bigfist", "src/assets/bigfist.png", 192/3, 64);
         game.load.image("sky", "src/assets/sky.png");
     }
     
@@ -73,12 +77,14 @@ export default function playState(game) {
         addBackgroundScenery();
         addEnemies();
         addShrek();
+        addActionSprites();
 
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.camera.follow(shrek, Phaser.Camera.FOLLOW_LOCKON);
 
         addForegroundScenery();
+        createPause();
 
         // Add a input listener that can help us return from being paused
         game.input.onDown.add(unpause, self);
@@ -86,8 +92,10 @@ export default function playState(game) {
         SPACE_BAR = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         SPACE_BAR.onUp.add(toggleStore, this);
 
-        ATTACK_KEY = game.input.keyboard.addKey(Phaser.Keyboard.A);
-        ATTACK_KEY.onUp.add(toggleStore, this);
+        ACTION_KEY = game.input.keyboard.addKey(Phaser.Keyboard.A);
+        ACTION_KEY.onUp.add(() => {animateAction('chop')}, this);
+        NET_KEY = game.input.keyboard.addKey(Phaser.Keyboard.S);
+        NET_KEY.onUp.add(() => {animateAction('net')}, this);
     }
     
     
@@ -138,6 +146,18 @@ export default function playState(game) {
         shrek.animations.add('shrekWalk', [0, 1, 2], 10, false);
     }
 
+    function addActionSprites() {
+
+        actionSpriteNames.forEach((spriteName) => {
+            let actionSprite = game.add.sprite(0,0, spriteName);
+            actionSprite.alpha = 0;
+            let animationName = spriteName + 'Anim';
+            let actionAnim = actionSprite.animations.add(animationName, [0,1,2, 2, 2], 12, false);
+            actionAnim.onComplete.add(() => actionSprite.alpha = 0, this);
+            actionSprites[spriteName] = {sprite: actionSprite, animationName: animationName, name: spriteName};
+        });
+    }
+
     function addEnemies() {
         donkey = game.add.sprite(0,0, 'donkey');
         donkey.anchor.setTo(0.5, 1);
@@ -162,12 +182,14 @@ export default function playState(game) {
     function createPause() {
         let pauseLabel = game.add.text(0, 20, 'Pause', { font: '24px Comic Sans MS', fill: FONT_COLOR });
         pauseLabel.inputEnabled = true;
+        pauseLabel.fixedToCamera = true;
         pauseLabel.events.onInputUp.add(function () {
             // When the paus button is pressed, we pause the game
             game.paused = true;
 
             // Then add the menu
-            storeUI = game.add.sprite(640/2, 512/2, 'storeMenu');
+            storeUI = game.add.sprite(640/2 + game.camera.x, 512/2, 'storeMenu');
+            storeUI.fixedToCamera = true;
             storeUI.anchor.setTo(0.5, 0.5);
         });
     }
@@ -211,7 +233,7 @@ export default function playState(game) {
             game.paused = true;
 
             // Then add the menu
-            storeUI = game.add.sprite(740, 256, 'storeMenu');
+            storeUI = game.add.sprite(740 + game.camera.x, 256, 'storeMenu');
             storeUI.anchor.setTo(.5, .5);
         }
         /*
@@ -222,25 +244,25 @@ export default function playState(game) {
     }
 
     function updateShrek() {
-        var isOnGround = game.physics.arcade.collide(shrek, groundPlatform);
-        
-        // shrek can't be controlled if he is being knocked back by an enemy
-        if(isShrekHit) {
-            if(Math.abs(shrek.x - shrekHitLocationX) > SHREK_KNOCKBACK_DISTANCE || !shrek.body.velocity.x) {
-                isShrekHit = false;
-            }
-            return;
+        updateActionSprites();
+        if (shrekHitTimer > 0) {
+            updateShrekDamaged();
+        } else {
+            updateShrekNormal();
         }
+    }
+
+    function updateShrekNormal() {
+        var isOnGround = game.physics.arcade.collide(shrek, groundPlatform);
 
         //  Reset the players velocity (movement)
         shrek.body.velocity.x = 0;
         shrek.body.bounce.y = bouncing ? 0.7 : 0.2;
-        game.physics.arcade.overlap(shrek, donkey, onShrekHit, null, this);
 
         if (cursors.left.isDown)
         {
             if(!isShrekFacingLeft) {
-                flipSpriteDirection(shrek); // flips shrek about the y axis
+                flipShrek(); // flips shrek about the y axis
                 isShrekFacingLeft = true;
             }
             //  Move to the left
@@ -250,7 +272,7 @@ export default function playState(game) {
         else if (cursors.right.isDown)
         {
             if(isShrekFacingLeft) {
-                flipSpriteDirection(shrek); // flips shrek about the y axis
+                flipShrek(); // flips shrek about the y axis
                 isShrekFacingLeft = false;
             }
             //  Move to the right
@@ -275,6 +297,13 @@ export default function playState(game) {
             bouncing = true;
         }
 
+        game.physics.arcade.overlap(shrek, donkey, onShrekHit, null, this);
+    }
+
+    function updateShrekDamaged() {
+        var isOnGround = game.physics.arcade.collide(shrek, groundPlatform);
+        shrekHitTimer--;
+        shrek.tint = shrekHitTimer % 4 >= 2 ? '0xff6666' : '0xffffff';
     }
 
     function moveDonkey() {
@@ -288,24 +317,28 @@ export default function playState(game) {
         }
     }
 
+    function updateActionSprites() {
+        Object.keys(actionSprites).forEach(
+            (actionSpriteName) => anchorActionSprite(actionSprites[actionSpriteName].sprite));
+    }
+
     function onShrekHit(shrek, enemy) {
-        isShrekHit = true;
-        let enemysVelocity = enemy.body.velocity.x;
-        let shreksVelocity = shrek.body.velocity.x;
-        if(!shreksVelocity) {
-            shrek.body.velocity.x = getDirectionFromVelocity(enemysVelocity) * SHREK_KNOCKBACK_SPEED; 
+        shrekHitTimer = SHREK_KNOCKBACK_TIME;
+        if(enemy.body.x > shrek.body.x) {
+            shrek.body.velocity.x = -SHREK_KNOCKBACK_SPEED;
         } else {
-            shrek.body.velocity.x = getDirectionFromVelocity(shreksVelocity) * -1 * SHREK_KNOCKBACK_SPEED;
+            shrek.body.velocity.x = SHREK_KNOCKBACK_SPEED;
         }
-        shrekHitLocationX = enemy.x;
+        shrek.body.velocity.y = -SHREK_KNOCKBACK_SPEED;
     }
 
     function animateAction(actionSpriteName) {
-        let actionSprite = game.add.sprite();
-    }
-
-    function getDirectionFromVelocity(velocity) {
-        return velocity / Math.abs(velocity);
+        let actionSprite = actionSprites[actionSpriteName].sprite;
+        let animationName = actionSprites[actionSpriteName].animationName;
+        actionSprite.alpha = 1;
+        actionSprite.anchor.setTo(1, 0.5);
+        anchorActionSprite(actionSprite);
+        actionSprite.animations.play(animationName);
     }
 
     // flips sprite about the y-axis
@@ -313,9 +346,22 @@ export default function playState(game) {
         sprite.scale.x *= -1
     }
     
+    function flipShrek() {
+        flipSpriteDirection(shrek);
+        Object.keys(actionSprites).forEach(
+            (actionSpriteName) => flipSpriteDirection(actionSprites[actionSpriteName].sprite));
+    }
+
+    function anchorActionSprite(actionSprite) {
+        let armAnchor = getShrekActionAnchor();
+        actionSprite.x = armAnchor.anchorX;
+        actionSprite.y = armAnchor.anchorY;
+    }
+
     function getShrekActionAnchor() {
-        let anchorX = shrek.x - 17;
-        let anchorY = shrek.x - 52;
+        let anchorX = isShrekFacingLeft? shrek.x - 17 : shrek.x + 17;
+        let anchorY = shrek.y - 52;
+        return {anchorX, anchorY};
     }
 
     return {preload, create, update};

@@ -1,5 +1,5 @@
 import {FONT_COLOR} from "../common/constants";
-import GenericButton from "../common/GenericButton";
+import StateTransitionButton from "../common/StateTransitionButton";
 import GitButton from "../common/gitButton";
 export default function aboutState(game) {
 
@@ -11,7 +11,7 @@ export default function aboutState(game) {
 
     return {
         create: function() {
-            GenericButton(game, 60, 30, '< Back', "Entry");
+            StateTransitionButton(game, 60, 30, '< Back', "Entry");
             GitButton(game, 60, 250, '> scottyseus on GitHub <', "https://github.com/scottyseus/due-process");
             GitButton(game, 60, 290, '> libjared on GitHub <', "https://github.com/libjared");
             GitButton(game, 60, 330, "> jronsomers GitHub", "https://github.com/jronSomers");

@@ -1,5 +1,5 @@
 import {FONT_COLOR} from "../common/constants";
-import GenericButton from "../common/GenericButton";
+import StateTransitionButton from "../common/StateTransitionButton";
 
 export default function entryState(game) {
     return {
@@ -14,8 +14,8 @@ export default function entryState(game) {
             let text = game.add.text(game.world.centerX, 20, "ShrekUnknown's BattleSwamps", titleStyle);
             text.anchor.set(0.5);
 
-            GenericButton(game, 30,30, 'Start', "Store", "Play");
-            GenericButton(game, 30, 50,'About', "About");
+            StateTransitionButton(game, 30,30, 'Start', "Store", "Play");
+            StateTransitionButton(game, 30, 50+72,'About', "About");
         },
 
         update: function() {
