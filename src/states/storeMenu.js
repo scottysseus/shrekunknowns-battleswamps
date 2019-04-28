@@ -13,6 +13,7 @@ export default function StoreMenu(game) {
     bmd.ctx.fill();
     menuContainer = game.add.sprite(game.camera.x + (game.width/2), game.camera.y + (game.height/2), bmd);
     menuContainer.anchor.setTo(0.5, 0.5);
-    menuContainer.bringToTop();    
+    menuContainer.bringToTop();
+    menuContainer.alpha = 0.5;  
     return menuContainer;
 }

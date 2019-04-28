@@ -12,6 +12,13 @@ export default function playState(game) {
         "Fairie Dust": {descr: "Slows fall speed & adds a double jump", cost: 100}
     };
 
+    const CREATURE_PRICES = {
+        "donkey": 500,
+        "pixie": 300,
+        "gnome": 200,
+        "unicorn": 100
+    }
+
     // locations
     let GROUND_LEVEL;
     let HEALTH_BAR_X = 10;
@@ -20,6 +27,7 @@ export default function playState(game) {
     let COIN_STAT_Y = 10;
     let STORE_X;
     let STORE_Y;
+    let STORE_RADIUS = 100;
 
     // game stats
     let level = 1;
@@ -78,6 +86,7 @@ export default function playState(game) {
         game.load.image("sky", "src/assets/sky.png");
         game.load.image("heart", "src/assets/heart.png");
         game.load.spritesheet("coin", "src/assets/coin.png", 128/8, 16);
+        game.load.spritesheet("fairy", "src/assets/fairy.png", 14, 17);
     }
     
     function create() {
@@ -113,7 +122,28 @@ export default function playState(game) {
     function update() {
         updateShrek();
         updateEnemies();
+        updateShrekAction();
         updateStatOverlay();
+    }
+
+    function updateShrekAction() {
+        const net = actionSprites['net'];
+        const netSprite = net.sprite;
+        if (netSprite.alpha > 0.5) {
+            enemies.forEach((enemy) => {
+                if (net.collidedEnemies.length >= 1 || inventory.includes(enemy.name)) {
+                    return;
+                }
+                const foundCollision = Phaser.Rectangle.intersects(enemy.getBounds(), netSprite.getBounds());
+                if (foundCollision) {
+                    net.collidedEnemies.push(enemy);
+                    inventory.push(enemy.name);
+                    enemies.splice(enemies.indexOf(enemy), 1);
+                    enemy.destroy();
+                    console.log(inventory);
+                }
+            });
+        }
     }
 
     function addBackgroundScenery() {
@@ -168,12 +198,20 @@ export default function playState(game) {
     function addActionSprites() {
 
         actionSpriteNames.forEach((spriteName) => {
-            let actionSprite = game.add.sprite(0,0, spriteName);
+            let actionSprite = game.add.sprite(0, 0, spriteName);
             actionSprite.alpha = 0;
             let animationName = spriteName + 'Anim';
-            let actionAnim = actionSprite.animations.add(animationName, [0,1,2, 2, 2], 12, false);
-            actionAnim.onComplete.add(() => actionSprite.alpha = 0, this);
-            actionSprites[spriteName] = {sprite: actionSprite, animationName: animationName, name: spriteName};
+            let actionAnim = actionSprite.animations.add(animationName, [0, 1, 2, 2, 2], 12, false);
+            actionAnim.onComplete.add(() => {
+                actionSprite.alpha = 0; 
+                actionSprites[spriteName].collidedEnemies = []
+            }, this);
+            actionSprites[spriteName] = {
+                sprite: actionSprite,
+                animationName: animationName,
+                name: spriteName,
+                collidedEnemies: []
+            };
         });
     }
 
@@ -190,6 +228,8 @@ export default function playState(game) {
             donkey.body.collideWorldBounds = true;
             donkey.animations.add('donkeyWalk', [0, 1, 2, 0], 12, false);
             donkey.direction = -1; // custom state
+            donkey.health = 3;
+            donkey.name = 'donkey'
             enemies.push(donkey);
         }
     }
@@ -203,7 +243,7 @@ export default function playState(game) {
     }
 
     function toggleStore() {
-        if (shrek.x <= STORE_X + 100 && shrek.x >= STORE_X - 100 && !game.paused) {
+        if (shrek.x <= STORE_X + STORE_RADIUS && shrek.x >= STORE_X - STORE_RADIUS && !isStoreOpen) {
             createStore();
             isStoreOpen = true;
         }
@@ -219,7 +259,10 @@ export default function playState(game) {
         let sellButtonCoords = camera_izeCoordinates(game.width - (MARGIN * 2),
             game.height - (MARGIN * 2));
         let sellButton = GenericButton(game, sellButtonCoords.x, 
-            sellButtonCoords.y, 'SELL CREATURES', () => {console.log("sold everything!!");});
+            sellButtonCoords.y, 'SELL CREATURES', () => {inventory.forEach((creature) => {
+                gold += CREATURE_PRICES[creature];
+                inventory.splice(inventory.indexOf(creature), 1);
+            })});
         sellButton.anchor.setTo(1, 0.5);
         storeUI.add(sellButton);
 
@@ -233,7 +276,10 @@ export default function playState(game) {
             let itemName = Object.keys(ITEM_MAP)[i];
             let y = MARGIN * 2 * (i + 1);
             let coords = camera_izeCoordinates(MARGIN * 2, y);
-            let itemButton = GenericButton(game, coords.x, coords.y, itemName, () => {inventory.push(itemName); ITEM_MAP.remove(itemName); });
+            let itemButton = GenericButton(game, coords.x, coords.y, itemName, () => {
+                inventory.push(itemName);
+                ITEM_MAP.remove(itemName);
+            });
             itemButton.anchor.setTo(1, 0.5);
             storeUI.add(itemButton);
 
@@ -351,6 +397,14 @@ export default function playState(game) {
     function updateEnemies() {
         enemies.forEach((enemy) => {
             var isOnGround = game.physics.arcade.collide(enemy, groundPlatform);
+
+            if(enemy.x > STORE_X - STORE_RADIUS && enemy.x < STORE_X + STORE_RADIUS&& enemy.x < STORE_X) {
+                enemy.body.velocity.x = -DONKEY_BASE_SPEED;
+                return;
+            } else if(enemy.x > STORE_X - STORE_RADIUS && enemy.x < STORE_X + STORE_RADIUS&& enemy.x > STORE_X) {
+                enemy.body.velocity.x = DONKEY_BASE_SPEED;
+                return;
+            }
 
             enemy.body.velocity.x = DONKEY_BASE_SPEED * enemy.direction;
             enemy.animations.play('donkeyWalk');
