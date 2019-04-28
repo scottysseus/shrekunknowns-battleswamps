@@ -1,4 +1,10 @@
-YOUR LIFE IS CURRENCY
+# ShrekUnknown's BattleSwamps
+
+A game created by scottyseus, libjared, jronSomers, and endlessDreamHero for Ludum Dare 44 (theme: _Your Life is Currency_).
+
+In this _Souls_-like battle-royale immersive experience, control your favorite Ogre, Shrek. Capture as many fairytale creatures as possible: their lives are currency to buy back your swamp.
+
+Note to our fans: this game _is_ set in the same fictional universe as [our last game](https://github.com/scottyseus/due-process).
 
 # idea 4
 ## SHREK SCENE WHERE THEY SELL FAIRYTALE CREATURES

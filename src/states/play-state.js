@@ -19,7 +19,7 @@ export default function playState(game) {
     let GROUND_LEVEL;
     let HEALTH_BAR_X = 10;
     let HEALTH_BAR_Y = 10;
-    let COIN_STAT_X = 300;
+    let COIN_STAT_X = 224;
     let COIN_STAT_Y = 10;
     let STORE_X;
     let STORE_Y;
@@ -36,11 +36,22 @@ export default function playState(game) {
     let shrek;
     const SHREK_BASE_SPEED = 150;
     const SHREK_BASE_JUMP_SPEED = 525;
-    let shrekHitTimer = 0;
     const SHREK_KNOCKBACK_TIME = 60; // 1 sec
     const SHREK_KNOCKBACK_SPEED = 200;
     let actionSprites = {};
-    let actionSpriteNames = ['chop', 'net', 'bigfist'];
+    let actionSpriteProps = {'chop': {
+            speed: 36,
+            collisionCheckFunction: checkChopCollision
+        }, 
+        'net': {
+            speed: 12,
+            collisionCheckFunction: checkNetCollision
+        }, 
+        'bigfist': {
+            speed: 18,
+            collisionCheckFunction: () => {}
+        }
+    };
     let coinIcon, coinText, heartGroup;
     let isShrekActing = false;
 
@@ -77,7 +88,7 @@ export default function playState(game) {
         game.load.image("store", "src/assets/store.png");
         game.load.image("forestBackground", "src/assets/forestBackground.png");
         game.load.image("storeBackground", "src/assets/storeBackground.png");
-        game.load.spritesheet("chop", "src/assets/chop.png", 108/3, 38);
+        game.load.spritesheet("chop", "src/assets/chop.png", 120/3, 64);
         game.load.spritesheet("net", "src/assets/net.png", 288/3, 108);
         game.load.spritesheet("bigfist", "src/assets/bigfist.png", 192/3, 64);
         game.load.image("sky", "src/assets/sky.png");
@@ -124,23 +135,13 @@ export default function playState(game) {
     }
 
     function updateShrekAction() {
-        const net = actionSprites['net'];
-        const netSprite = net.sprite;
-        if (netSprite.alpha > 0.5) {
-            enemies.forEach((enemy) => {
-                if (net.collidedEnemies.length >= 1 || Object.keys(capturedCreatures).includes(enemy.name)) {
-                    return;
-                }
-                const foundCollision = Phaser.Rectangle.intersects(enemy.getBounds(), netSprite.getBounds());
-                if (foundCollision) {
-                    net.collidedEnemies.push(enemy);
-                    capturedCreatures[enemy.name] = enemy.template;
-                    enemies.splice(enemies.indexOf(enemy), 1);
-                    enemy.destroy();
-                    console.log(capturedCreatures);
-                }
-            });
-        }
+        Object.keys(actionSpriteProps).forEach((actionName) => {
+            const sprite = actionSprites[actionName].sprite;
+            if (sprite.alpha > 0.5) {
+                actionSpriteProps[actionName].collisionCheckFunction();
+            }    
+        });
+
     }
 
     function addBackgroundScenery() {
@@ -190,15 +191,17 @@ export default function playState(game) {
         shrek.body.gravity.y = GRAVITY;
         shrek.body.collideWorldBounds = true;
         shrek.animations.add('shrekWalk', [0, 1, 2], 10, false);
+        shrek.hitTimer = 0;
     }
 
     function addActionSprites() {
 
-        actionSpriteNames.forEach((spriteName) => {
+        Object.keys(actionSpriteProps).forEach((spriteName) => {
+            let spriteProps = actionSpriteProps[spriteName];
             let actionSprite = game.add.sprite(0, 0, spriteName);
             actionSprite.alpha = 0;
             let animationName = spriteName + 'Anim';
-            let actionAnim = actionSprite.animations.add(animationName, [0, 1, 2, 2, 2], 12, false);
+            let actionAnim = actionSprite.animations.add(animationName, [0, 1, 2, 2, 2], spriteProps.speed, false);
             actionAnim.onComplete.add(() => {
                 actionSprite.alpha = 0; 
                 actionSprites[spriteName].collidedEnemies = []
@@ -213,6 +216,7 @@ export default function playState(game) {
     }
 
     function addEnemies() {
+        enemies = [];
         for (let i = 0; i < 10; i++) {
             spawnEnemy(CreatureConstants.DONKEY);
         }
@@ -343,9 +347,10 @@ export default function playState(game) {
             shrek.body.velocity.x = 0;
             return;
         }
-        updateActionSprites();
-        if (shrekHitTimer > 0) {
-            updateShrekDamaged();
+        reanchorActionSprites();
+        if (shrek.hitTimer > 0) {
+            game.physics.arcade.collide(shrek, groundPlatform);
+            updateKnockedBackSprite(shrek);
         } else {
             updateShrekNormal();
         }
@@ -400,15 +405,19 @@ export default function playState(game) {
         });
     }
 
-    function updateShrekDamaged() {
-        var isOnGround = game.physics.arcade.collide(shrek, groundPlatform);
-        shrekHitTimer--;
-        shrek.tint = shrekHitTimer % 4 >= 2 ? '0xff6666' : '0xffffff';
+    function updateKnockedBackSprite(sprite) {
+        sprite.hitTimer--;
+        sprite.tint = sprite.hitTimer % 4 >= 2 ? '0xff6666' : '0xffffff';
     }
 
     function updateEnemies() {
         enemies.forEach((enemy) => {
             var isOnGround = game.physics.arcade.collide(enemy, groundPlatform);
+
+            if(enemy.hitTimer > 0) {
+                updateKnockedBackSprite(enemy);
+                return;
+            }
 
             if(enemy.pauseTimer > 0) {
                 enemy.pauseTimer--;
@@ -433,15 +442,21 @@ export default function playState(game) {
             }
 
             enemy.body.velocity.x = speed * enemy.direction;
-            enemy.animations.play('donkeyWalk');
+            enemy.animations.play(enemy.name + 'Walk');
             if(Math.random() > 0.98) {
                 enemy.direction *= -1;
                 flipSpriteDirection(enemy);
             }
+                //  Allow the shrek to jump if they are touching the ground.
+            if (enemy.body.touching.down && isOnGround) {
+                if(Math.random() * 1000 > 999) {
+                    enemy.body.velocity.y = -SHREK_BASE_JUMP_SPEED;
+                }
+            }
         });
     }
 
-    function updateActionSprites() {
+    function reanchorActionSprites() {
         Object.keys(actionSprites).forEach(
             (actionSpriteName) => anchorActionSprite(actionSprites[actionSpriteName].sprite));
     }
@@ -451,16 +466,20 @@ export default function playState(game) {
         if(health < 1) {
             game.state.start("GameOver");
         }
-        shrekHitTimer = SHREK_KNOCKBACK_TIME;
-        if(enemy.body.x > shrek.body.x) {
-            shrek.body.velocity.x = -SHREK_KNOCKBACK_SPEED;
-        } else {
-            shrek.body.velocity.x = SHREK_KNOCKBACK_SPEED;
-        }
-        shrek.body.velocity.y = -SHREK_KNOCKBACK_SPEED;
+        knockbackSprite(shrek, enemy);
         enemy.body.velocity.x = 0;
         enemy.body.velocity.y = 0;
         enemy.pauseTimer = SHREK_KNOCKBACK_TIME / 2;
+    }
+
+    function knockbackSprite(sprite, adversary) {
+        sprite.hitTimer = SHREK_KNOCKBACK_TIME;
+        if(adversary.body.x > sprite.body.x) {
+            sprite.body.velocity.x = -SHREK_KNOCKBACK_SPEED;
+        } else {
+            sprite.body.velocity.x = SHREK_KNOCKBACK_SPEED;
+        }
+        sprite.body.velocity.y = -SHREK_KNOCKBACK_SPEED;
     }
 
     function animateAction(actionSpriteName) {
@@ -509,6 +528,43 @@ export default function playState(game) {
 
     function getEnemySpeedFromLevel(enemyTemplate) {
         return enemyTemplate.baseSpeed;
+    }
+
+    function checkNetCollision() {
+        const net = actionSprites['net'];
+        const netSprite = net.sprite;
+        enemies.forEach((enemy) => {
+            if (net.collidedEnemies.length >= 1 || Object.keys(capturedCreatures).includes(enemy.name) || enemy.health > 0) {
+                return;
+            }
+            const foundCollision = Phaser.Rectangle.intersects(enemy.getBounds(), netSprite.getBounds());
+            if (foundCollision) {
+                net.collidedEnemies.push(enemy);
+                capturedCreatures[enemy.name] = enemy.template;
+                enemies.splice(enemies.indexOf(enemy), 1);
+                enemy.destroy();
+                console.log(capturedCreatures);
+            }
+        });
+        
+    }
+
+    function checkChopCollision() {
+        const chop = actionSprites['chop'];
+        const chopSprite = chop.sprite;
+
+        enemies.forEach((enemy) => {
+            if (chop.collidedEnemies.includes(enemy)) {
+                return;
+            }
+            const foundCollision = Phaser.Rectangle.intersects(enemy.getBounds(), chopSprite.getBounds());
+            if (foundCollision) {
+                chop.collidedEnemies.push(enemy);
+                enemy.health = enemy.health - 1;
+                console.log("hit a mufukka");
+                knockbackSprite(enemy, shrek);
+            }
+        });
     }
 
     return {preload, create, update};
