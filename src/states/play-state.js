@@ -6,8 +6,7 @@ export default function playState(game) {
 
     const GRAVITY = 600*2;
     const BOUNCE = 0.2;
-    const STORE_X = 650;
-    const STORE_Y = game.height - 310;
+    
 
     const ITEM_MAP = {
         "Fairie Dust": {descr: "Slows fall speed & adds a double jump", cost: 100}
@@ -19,6 +18,8 @@ export default function playState(game) {
     let HEALTH_BAR_Y = 10;
     let COIN_STAT_X = 300;
     let COIN_STAT_Y = 10;
+    let STORE_X;
+    let STORE_Y;
 
     // game stats
     let level = 1;
@@ -36,7 +37,7 @@ export default function playState(game) {
     const SHREK_KNOCKBACK_SPEED = 200;
     let actionSprites = {};
     let actionSpriteNames = ['chop', 'net', 'bigfist'];
-    let coinText;
+    let coinIcon, coinText, heartGroup;
 
     let storeUI;
     let choiceLabel;
@@ -51,7 +52,7 @@ export default function playState(game) {
     // player stats
     let gold = 0;
     let inventory = [];
-    let health = 10
+    let health = 10;
 
     // keys
     let SPACE_BAR;
@@ -70,15 +71,19 @@ export default function playState(game) {
         game.load.image("berryBush", "src/assets/berryBush.png");
         game.load.image("store", "src/assets/store.png");
         game.load.image("forestBackground", "src/assets/forestBackground.png");
+        game.load.image("storeBackground", "src/assets/storeBackground.png");
         game.load.spritesheet("chop", "src/assets/chop.png", 108/3, 38);
         game.load.spritesheet("net", "src/assets/net.png", 288/3, 108);
         game.load.spritesheet("bigfist", "src/assets/bigfist.png", 192/3, 64);
         game.load.image("sky", "src/assets/sky.png");
+        game.load.image("heart", "src/assets/heart.png");
         game.load.spritesheet("coin", "src/assets/coin.png", 128/8, 16);
     }
     
     function create() {
         GROUND_LEVEL = game.world.height - 64;
+        STORE_X = 640 * 5 + 450;
+        STORE_Y = GROUND_LEVEL - 64;
 
         game.world.setBounds(0, 0, 6400, 512);
         game.stage.disableVisibilityChange = true;
@@ -108,6 +113,7 @@ export default function playState(game) {
     function update() {
         updateShrek();
         updateEnemies();
+        updateStatOverlay();
     }
 
     function addBackgroundScenery() {
@@ -135,15 +141,22 @@ export default function playState(game) {
             var x = i * 640;
             var y = game.world.height - 64 - 12- 320;
             game.add.sprite(x, 0, 'sky');
-            game.add.sprite(x, y, 'forestBackground');
+            if(i == 5) {
+                game.add.sprite(x, y, 'storeBackground');
+            } else {
+                game.add.sprite(x, y, 'forestBackground');
+            }
         }
-        game.add.sprite(STORE_X, STORE_Y, "store");
+        
+        let store = game.add.sprite(STORE_X, STORE_Y, "store");
+        store.scale.setTo(2);
+        store.anchor.setTo(0.5, 0.5);
     }
 
     function addShrek() {
         shrek = game.add.sprite(0,0,'shrek');
         shrek.anchor.setTo(0.5, 1);
-        shrek.x = 150;
+        shrek.x = STORE_X;
         shrek.y = GROUND_LEVEL;
         game.physics.arcade.enable(shrek);
         shrek.body.bounce.y = BOUNCE;
@@ -165,11 +178,11 @@ export default function playState(game) {
     }
 
     function addEnemies() {
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 10; i++) {
             let donkey = game.add.sprite(0, 0, 'donkey');
             donkey.anchor.setTo(0.5, 1);
 
-            donkey.x = 150 + i*20;
+            donkey.x = STORE_X - 600;
             donkey.y = GROUND_LEVEL;
             game.physics.arcade.enable(donkey);
             donkey.body.bounce.y = BOUNCE;
@@ -190,7 +203,7 @@ export default function playState(game) {
     }
 
     function toggleStore() {
-        if (shrek.x <= 750 && shrek.x >= 630 && !game.paused) {
+        if (shrek.x <= STORE_X + 100 && shrek.x >= STORE_X - 100 && !game.paused) {
             createStore();
             isStoreOpen = true;
         }
@@ -212,7 +225,7 @@ export default function playState(game) {
 
         let closeButtonCoords = camera_izeCoordinates(game.width - (MARGIN * 2), MARGIN * 2);
         let closeButton = GenericButton(game, closeButtonCoords.x, 
-            closeButtonCoords.y, 'X', () => storeUI.destroy());
+            closeButtonCoords.y, 'X', () => {storeUI.destroy(); isStoreOpen = false;});
         closeButton.anchor.setTo(0, 0);
         storeUI.add(closeButton);
 
@@ -220,7 +233,7 @@ export default function playState(game) {
             let itemName = Object.keys(ITEM_MAP)[i];
             let y = MARGIN * 2 * (i + 1);
             let coords = camera_izeCoordinates(MARGIN * 2, y);
-            let itemButton = GenericButton(game, coords.x, coords.y, itemName, () => {inventory.push(itemName)});
+            let itemButton = GenericButton(game, coords.x, coords.y, itemName, () => {inventory.push(itemName); ITEM_MAP.remove(itemName); });
             itemButton.anchor.setTo(1, 0.5);
             storeUI.add(itemButton);
 
@@ -231,17 +244,39 @@ export default function playState(game) {
     }
 
     function addStatOverlay() {
-        let coinIcon = game.add.sprite(COIN_STAT_X,COIN_STAT_Y,sprite);
+        heartGroup = game.add.group();
+        let coinCoords = camera_izeCoordinates(COIN_STAT_X, COIN_STAT_Y);
+        coinIcon = game.add.sprite(coinCoords.x, coinCoords.y,'coin');
         coinIcon.animations.add('rotate', [0,1,2,3,4,5,6,7], 14, true);
         coinIcon.animations.play('rotate');
         coinIcon.anchor.setTo(0,0);
+        coinIcon.fixedToCamera = true;
         
-        coinText = game.add.text(COIN_STAT_X + 20, COIN_STAT_Y, ' x ' + gold, {font: 'Comic Sans MS', fill: "#ffffff", align: 'left', fontSize: '12px'});
+        coinText = game.add.text(coinCoords.x + 20, coinCoords.y, ' x ' + gold, {font: 'Comic Sans MS', fill: FONT_COLOR, align: 'left', fontSize: '12px'});
+        coinText.fixedToCamera = true;
 
+        for(let i = 0; i < health; ++i) {
+            let coords = camera_izeCoordinates(HEALTH_BAR_X + 18 * i, HEALTH_BAR_Y);
+            let heart = game.add.sprite(coords.x, coords.y, 'heart');
+            heart.fixedToCamera = true;
+            heart.anchor.set(0,0);
+            heartGroup.add(heart);
+        }
     }
 
     function updateStatOverlay() {
+        coinText.x = COIN_STAT_X + 20;
+        coinText.y = COIN_STAT_Y.y; 
+        coinText.text = ' x ' + gold;
 
+        for(let i = 0; i < heartGroup.children.length; ++i) {
+            let heart = heartGroup.getChildAt(i);
+            if(i < health) {
+                heart.visible = true
+            } else {
+                heart.visible = false;
+            }
+        }
     }
 
     function updateShrek() {
@@ -289,8 +324,7 @@ export default function playState(game) {
         }
 
         //  Allow the shrek to jump if they are touching the ground.
-        if (cursors.up.isDown && shrek.body.touching.down && isOnGround)
-        {
+        if (cursors.up.isDown && shrek.body.touching.down && isOnGround) {
             shrek.body.velocity.y = -SHREK_BASE_JUMP_SPEED;
         }
 
