@@ -7,13 +7,15 @@ import CreatureConstants from "./creatureConstants";
 export default function playState(game) {
 
     const GRAVITY = 600*2;
-    const BOUNCE = 0.2;
+    const BOUNCE = 0;
     
 
     const ITEM_MAP = {
-        "Fairie Dust": {descr: "Slows fall speed & adds a double jump", cost: 100},
-        "Big Fist": {descr: "Attacks do more damage and knocks back enemies farther", cost: 200},
-        "Swamp Bubble": {descr: "Takes one free hit & increaeses jump height while active", cost: 50}
+        "Fairie Dust": {icon: "fairieDustIcon" , descr: "Slows fall speed & adds a double jump", cost: 100},
+        "Big Fist": {icon: "bigFistIcon" , descr: "Attacks do more damage and knocks back enemies farther", cost: 200},
+        "Swamp Bubble": {icon: "swampBubbleIcon" , descr: "Takes one free hit & adds bounce ability", cost: 50},
+        "Speed": {icon: "speedIcon" , descr: "Doubles movement speed", cost: 500},
+        "Fart in a Jar": {icon: "fartJarIcon" , descr: "Add double-jump ability", cost: 500},
     };
 
 
@@ -28,8 +30,11 @@ export default function playState(game) {
     let STORE_Y;
     let STORE_RADIUS = 180;
 
-    let CREATURE_COUNT_X = game.width - 82;
-    let CREATURE_COUNT_Y = 10;
+    let BAG_X = game.width - 82;
+    let BAG_Y = 10;
+
+    let ITEM_X = 324;
+    let ITEM_Y = 10;
 
     // game stats
     let level = 1;
@@ -39,7 +44,7 @@ export default function playState(game) {
     let groundPlatform;
 
     // characters
-    let shrek;
+    let shrek, swampBubble;
     const SHREK_BASE_SPEED = 150;
     const SHREK_BASE_JUMP_SPEED = 525;
     const SHREK_KNOCKBACK_TIME = 45;
@@ -61,6 +66,8 @@ export default function playState(game) {
     let coinIcon, coinText, heartGroup, iconBag;
     let icons = {};
     let isShrekActing = false;
+    let doubleJumped = false;
+    let jumpKeyWasPressed = false;
 
     let storeUI;
     let choiceLabel;
@@ -70,6 +77,10 @@ export default function playState(game) {
     let storePurchaseSound;
     let storePurchaseDenied;
     let netCaptureSound;
+    let bubbleGetSound;
+    let bubbleBounceSound;
+    let bubblePopSound;
+    let fartSound;
 
     // flags
     let isShrekFacingLeft = true;
@@ -79,6 +90,7 @@ export default function playState(game) {
     // player stats
     let gold = 1000;
     let inventory = {};
+    let inventoryDisplay = {};
     let capturedCreatures = {};
     let health = 10;
 
@@ -106,6 +118,7 @@ export default function playState(game) {
         game.load.image("sky", "src/assets/sky.png");
         game.load.image("heart", "src/assets/heart.png");
         game.load.spritesheet("coin", "src/assets/coin.png", 128/8, 16);
+        game.load.image("swampBubble", "src/assets/swampBubble.png");
 
         // icons
         game.load.image("donkeyIcon", "src/assets/donkeyIcon.png");
@@ -115,13 +128,19 @@ export default function playState(game) {
         game.load.image("iconBagOverlay", "src/assets/iconBagOverlay.png");
 
         game.load.image("swampBubbleIcon", "src/assets/swampBubbleIcon.png");
-        game.load.image("fairyDustIcon", "src/assets/fairyDustIcon.png");
+        game.load.image("fairieDustIcon", "src/assets/fairieDustIcon.png");
         game.load.image("bigFistIcon", "src/assets/bigFistIcon.png");
+        game.load.image("speedIcon", "src/assets/speedIcon.png");
+        game.load.image("fartJarIcon", "src/assets/fartJarIcon.png");
 
         // sounds
         game.load.audio("net", "src/assets/sound/net.wav");
         game.load.audio("purchase", "src/assets/sound/cashreg.wav");
         game.load.audio("denied", "src/assets/sound/denied.wav");
+        game.load.audio("bubbleGet", "src/assets/sound/bubbleget.wav");
+        game.load.audio("bubbleBounce", "src/assets/sound/bubblebounce.wav");
+        game.load.audio("bubblePop", "src/assets/sound/bubblePop.wav");
+        game.load.audio("fart", "src/assets/sound/fart.wav");
     }
     
     function create() {
@@ -151,12 +170,14 @@ export default function playState(game) {
         ACTION_KEY.onUp.add(() => {animateAction('chop');}, this);
         NET_KEY = game.input.keyboard.addKey(Phaser.Keyboard.S);
         NET_KEY.onUp.add(() => {animateAction('net')}, this);
+        createInventory();
         storePurchaseSound = game.add.audio("purchase");
         storePurchaseDenied = game.add.audio("denied");
         netCaptureSound = game.add.audio("net");
-        
-        
-        createInventory();
+        bubbleGetSound = game.add.audio("bubbleGet");
+        bubbleBounceSound = game.add.audio("bubbleBounce");
+        bubblePopSound = game.add.audio("bubblePop");
+        fartSound = game.add.audio("fart");
     }
     
     
@@ -232,6 +253,14 @@ export default function playState(game) {
         shrek.body.collideWorldBounds = true;
         shrek.animations.add('shrekWalk', [0, 1, 2], 10, false);
         shrek.hitTimer = 0;
+
+        addSwampBubble();
+    }
+
+    function addSwampBubble() {
+        swampBubble = game.add.image(shrek.x, shrek.y, "swampBubble");
+        swampBubble.alpha = 0;
+        swampBubble.anchor.setTo(0.5, 1);
     }
 
     function addActionSprites() {
@@ -267,10 +296,6 @@ export default function playState(game) {
 
     function spawnEnemy(enemyTemplate) {
         let enemy = game.add.sprite(0, 0, enemyTemplate.name);
-        // copy enemy template to sprite
-        for (const [enemyParam, enemyParamValue] of Object.entries(enemyTemplate)) {
-            enemy[enemyParam] = enemyParamValue;
-        }
 
         enemy.anchor.setTo(0.5, 1);
 
@@ -354,7 +379,11 @@ export default function playState(game) {
                 if (validatePurchase(ITEM_MAP[itemName], itemName)) {
                     inventory[itemName]+= 1;
                     gold-= ITEM_MAP[itemName].cost;
-                    storePurchsaseSound.play();
+                    if (itemName === "Swamp Bubble") {
+                        bubbleGetSound.play();
+                    } else {
+                        storePurchaseSound.play();
+                    }
                 } else {
                     storePurchaseDenied.play();
                 }
@@ -395,7 +424,7 @@ export default function playState(game) {
         }
 
         // add captured creatures
-        let bagCoords = camera_izeCoordinates(CREATURE_COUNT_X, CREATURE_COUNT_Y)
+        let bagCoords = camera_izeCoordinates(BAG_X, BAG_Y)
         iconBag = game.add.image(bagCoords.x, bagCoords.y, "iconBag");
         iconBag.anchor.setTo(0,0);
         iconBag.fixedToCamera = true;
@@ -419,26 +448,41 @@ export default function playState(game) {
             }
         }
 
+        // capture creatures
         Object.keys(capturedCreatures).forEach((creatureName) => {
             if(icons[creatureName]) {
                 return;
             }
             let col = Object.keys(icons).length % 3;
             let row = Math.floor(Object.keys(icons).length / 3);
-            let y = CREATURE_COUNT_Y + iconBag.height - 8 - (row * 18);
-            let x = CREATURE_COUNT_X + (col * 18) + 16 ;
+            let y = BAG_Y + iconBag.height - 8 - (row * 18);
+            let x = BAG_X + (col * 18) + 16 ;
             let icon = game.add.image(x,y, creatureName + 'Icon');
             icon.fixedToCamera = true;
             icon.anchor.setTo(0.5, 1);
             icons[creatureName] = icon;
         });
-    }
 
-    function updateCaptureBag() {
-
+        // items
+        Object.keys(inventory).forEach((itemName) => {
+            if(inventory[itemName] < 1 || inventoryDisplay[itemName] || itemName === "Swamp Bubble") {
+                return;
+            }
+            let col = Object.keys(inventoryDisplay).length;
+            let itemIcon = game.add.image(ITEM_X + 18*col,ITEM_Y,ITEM_MAP[itemName].icon);
+            itemIcon.fixedToCamera = true;
+            itemIcon.anchor.setTo(0,0);
+            inventoryDisplay[itemName] = itemIcon;
+        });
     }
     
     function updateShrek() {
+        if(inventory["Swamp Bubble"] > 0) {
+            swampBubble.alpha = 0.6;
+        } else {
+            swampBubble.alpha = 0;
+        }
+
         if(isStoreOpen) {
             game.physics.arcade.collide(shrek, groundPlatform);
             shrek.body.velocity.x = 0;
@@ -451,14 +495,22 @@ export default function playState(game) {
         } else {
             updateShrekNormal();
         }
+        swampBubble.x = shrek.x;
+        swampBubble.y = shrek.y;
     }
+
+    function getShrekRunSpeed() {
+        return inventory["Speed"] ? SHREK_BASE_SPEED * 2 : SHREK_BASE_SPEED;
+    }
+    
+
 
     function updateShrekNormal() {
 
         var isOnGround = game.physics.arcade.collide(shrek, groundPlatform);
         //  Reset the players velocity (movement)
         shrek.body.velocity.x = 0;
-        shrek.body.bounce.y = bouncing ? 0.7 : 0.2;
+        shrek.body.bounce.y = bouncing ? 0.7 : BOUNCE;
 
         if (cursors.left.isDown)
         {
@@ -467,7 +519,7 @@ export default function playState(game) {
                 isShrekFacingLeft = true;
             }
             //  Move to the left
-            shrek.body.velocity.x = -SHREK_BASE_SPEED;
+            shrek.body.velocity.x = -getShrekRunSpeed();
             shrek.animations.play('shrekWalk');
         }
         else if (cursors.right.isDown)
@@ -477,22 +529,35 @@ export default function playState(game) {
                 isShrekFacingLeft = false;
             }
             //  Move to the right
-            shrek.body.velocity.x = SHREK_BASE_SPEED;
+            shrek.body.velocity.x = getShrekRunSpeed();
             shrek.animations.play('shrekWalk');
         } else {
             shrek.frame = 0;
         }
 
         //  Allow the shrek to jump if they are touching the ground.
-        if (cursors.up.isDown && shrek.body.touching.down && isOnGround) {
-            shrek.body.velocity.y = -SHREK_BASE_JUMP_SPEED;
+        if (cursors.up.isDown) {
+            if(shrek.body.touching.down && isOnGround) {
+                shrek.body.velocity.y = -SHREK_BASE_JUMP_SPEED;
+            } else if(!doubleJumped && !jumpKeyWasPressed && inventory["Fart in a Jar"] > 0) {
+                shrek.body.velocity.y = -SHREK_BASE_JUMP_SPEED;
+                doubleJumped = true;
+                fartSound.play();
+            }
+            jumpKeyWasPressed = true;
+        } else {
+            jumpKeyWasPressed = false;
         }
-
         // bounce logic
         if (isOnGround) {
+            if (bouncing) {
+                bubbleBounceSound.play();
+            }
             bouncing = false;
+            doubleJumped = false;
         }
-        if (cursors.down.isDown && !isOnGround && bouncing === false) {
+        const currentDown = cursors.down.isDown;
+        if (currentDown && !lastDown && !isOnGround && bouncing === false && inventory["Swamp Bubble"] === 1) {
             shrek.body.velocity.y = 900*1.25;
             bouncing = true;
         }
@@ -500,7 +565,10 @@ export default function playState(game) {
         enemies.forEach((enemy) => {
             game.physics.arcade.overlap(shrek, enemy, onShrekHit, null, this);
         });
+        lastDown = currentDown;
     }
+
+    let lastDown = false;
 
     function updateKnockedBackSprite(sprite) {
         sprite.hitTimer--;
@@ -562,13 +630,13 @@ export default function playState(game) {
 
             enemy.body.velocity.x = speed * enemy.direction;
             enemy.animations.play(enemy.name + 'Walk');
-            if(Math.random() < enemy.turnProb) {
+            if(Math.random() < enemy.template.turnProb) {
                 enemy.direction *= -1;
                 flipSpriteDirection(enemy);
             }
                 //  Allow the shrek to jump if they are touching the ground.
             if (enemy.body.touching.down && isOnGround) {
-                if(Math.random() * 1000 > 999) {
+                if(Math.random() * 1000 > 992) {
                     enemy.body.velocity.y = -SHREK_BASE_JUMP_SPEED;
                 }
             }
@@ -581,20 +649,28 @@ export default function playState(game) {
     }
 
     function onShrekHit(shrek, enemy) {
+        enemy.body.velocity.x = 0;
+        enemy.body.velocity.y = 0;
+        enemy.pauseTimer = SHREK_KNOCKBACK_TIME / 2;
+        knockbackSprite(shrek, enemy);
+        if(inventory["Swamp Bubble"] > 0) {
+            inventory["Swamp Bubble"] = inventory["Swamp Bubble"] - 1;
+            bubblePopSound.play();
+            return;
+        }
         health--;
         if(health < 1) {
             game.state.start("GameOver");
         }
-        knockbackSprite(shrek, enemy);
-        enemy.body.velocity.x = 0;
-        enemy.body.velocity.y = 0;
-        enemy.pauseTimer = SHREK_KNOCKBACK_TIME / 2;
     }
 
     function knockbackSprite(sprite, adversary) {
         sprite.hitTimer = SHREK_KNOCKBACK_TIME;
-        let velocityX = sprite.knockbackVelocityX !== undefined ? sprite.knockbackVelocityX : SHREK_KNOCKBACK_SPEED;
-        let velocityY = sprite.knockbackVelocityY !== undefined ? sprite.knockbackVelocityY : SHREK_KNOCKBACK_SPEED;
+        const template = sprite.template || {};
+        const kbX = template.knockbackVelocityX;
+        const kbY = template.knockbackVelocityY;
+        let velocityX = kbX !== undefined ? kbX : SHREK_KNOCKBACK_SPEED;
+        let velocityY = kbY !== undefined ? kbY : -SHREK_KNOCKBACK_SPEED;
         sprite.body.velocity.x = (adversary.body.x > sprite.body.x ? -velocityX : velocityX);
         sprite.body.velocity.y = velocityY;
     }

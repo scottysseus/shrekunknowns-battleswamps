@@ -6,7 +6,7 @@ const CREATURE_NAMES = {
 }
 
 let BASE_ENEMY = {
-    turnProb: 0.05,
+    turnProb: 0.02,
     knockbackVelocityX: 200,
     knockbackVelocityY: -200,
 };
@@ -24,7 +24,7 @@ let FAIRY = {
     ...BASE_ENEMY,
     name: CREATURE_NAMES.FAIRY,
     price: 50,
-    baseSpeed: 50,
+    baseSpeed: 60,
     baseHealth: 1,
     baseSpawnRate: 900,
     flier: true,
