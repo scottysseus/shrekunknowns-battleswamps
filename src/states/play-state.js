@@ -23,7 +23,7 @@ export default function playState(game) {
     let COIN_STAT_Y = 10;
     let STORE_X;
     let STORE_Y;
-    let STORE_RADIUS = 100;
+    let STORE_RADIUS = 120;
 
     // game stats
     let level = 1;
@@ -42,6 +42,7 @@ export default function playState(game) {
     let actionSprites = {};
     let actionSpriteNames = ['chop', 'net', 'bigfist'];
     let coinIcon, coinText, heartGroup;
+    let isShrekActing = false;
 
     let storeUI;
     let choiceLabel;
@@ -54,7 +55,8 @@ export default function playState(game) {
 
     // player stats
     let gold = 0;
-    let inventory = [];
+    let inventory = {};
+    let capturedCreatures = {};
     let health = 10;
 
     // keys
@@ -108,7 +110,7 @@ export default function playState(game) {
         SPACE_BAR.onUp.add(toggleStore, this);
 
         ACTION_KEY = game.input.keyboard.addKey(Phaser.Keyboard.A);
-        ACTION_KEY.onUp.add(() => {animateAction('chop')}, this);
+        ACTION_KEY.onUp.add(() => {animateAction('chop');}, this);
         NET_KEY = game.input.keyboard.addKey(Phaser.Keyboard.S);
         NET_KEY.onUp.add(() => {animateAction('net')}, this);
     }
@@ -126,16 +128,16 @@ export default function playState(game) {
         const netSprite = net.sprite;
         if (netSprite.alpha > 0.5) {
             enemies.forEach((enemy) => {
-                if (net.collidedEnemies.length >= 1 || inventory.includes(enemy.name)) {
+                if (net.collidedEnemies.length >= 1 || Object.keys(capturedCreatures).includes(enemy.name)) {
                     return;
                 }
                 const foundCollision = Phaser.Rectangle.intersects(enemy.getBounds(), netSprite.getBounds());
                 if (foundCollision) {
                     net.collidedEnemies.push(enemy);
-                    inventory.push(enemy.name);
+                    capturedCreatures[enemy.name] = enemy.template;
                     enemies.splice(enemies.indexOf(enemy), 1);
                     enemy.destroy();
-                    console.log(inventory);
+                    console.log(capturedCreatures);
                 }
             });
         }
@@ -231,6 +233,7 @@ export default function playState(game) {
         enemy.health = enemyTemplate.baseHealth;
         enemy.name = enemyTemplate.name
         enemy.template = enemyTemplate;
+        enemy.pauseTimer = 0;
         enemies.push(enemy);
     }
 
@@ -267,9 +270,10 @@ export default function playState(game) {
         let sellButtonCoords = camera_izeCoordinates(game.width - (MARGIN * 2),
             game.height - (MARGIN * 2));
         let sellButton = GenericButton(game, sellButtonCoords.x, 
-            sellButtonCoords.y, 'SELL CREATURES', () => {inventory.forEach((creature) => {
-                gold += CreatureConstants.CREATURE_PRICES[creature];
-                inventory.splice(inventory.indexOf(creature), 1);
+            sellButtonCoords.y, 'SELL CREATURES', () => {Object.keys(capturedCreatures).forEach((creatureName) => {
+                let creature = capturedCreatures[creatureName];
+                gold += creature.price;
+                capturedCreatures[creatureName] = [];
             })});
         sellButton.anchor.setTo(1, 0.5);
         storeUI.add(sellButton);
@@ -406,6 +410,10 @@ export default function playState(game) {
         enemies.forEach((enemy) => {
             var isOnGround = game.physics.arcade.collide(enemy, groundPlatform);
 
+            if(enemy.pauseTimer > 0) {
+                enemy.pauseTimer--;
+                return;
+            }
             let speed = getEnemySpeedFromLevel(enemy.template);
 
             if(enemy.x > STORE_X - STORE_RADIUS && enemy.x < STORE_X) {
@@ -439,6 +447,10 @@ export default function playState(game) {
     }
 
     function onShrekHit(shrek, enemy) {
+        health--;
+        if(health < 1) {
+            game.state.start("GameOver");
+        }
         shrekHitTimer = SHREK_KNOCKBACK_TIME;
         if(enemy.body.x > shrek.body.x) {
             shrek.body.velocity.x = -SHREK_KNOCKBACK_SPEED;
@@ -446,15 +458,23 @@ export default function playState(game) {
             shrek.body.velocity.x = SHREK_KNOCKBACK_SPEED;
         }
         shrek.body.velocity.y = -SHREK_KNOCKBACK_SPEED;
+        enemy.body.velocity.x = 0;
+        enemy.body.velocity.y = 0;
+        enemy.pauseTimer = SHREK_KNOCKBACK_TIME / 2;
     }
 
     function animateAction(actionSpriteName) {
+        if(isShrekActing) {
+            return;
+        }
+        isShrekActing = true;
         let actionSprite = actionSprites[actionSpriteName].sprite;
         let animationName = actionSprites[actionSpriteName].animationName;
         actionSprite.alpha = 1;
         actionSprite.anchor.setTo(1, 0.5);
         anchorActionSprite(actionSprite);
-        actionSprite.animations.play(animationName);
+        let anim = actionSprite.animations.play(animationName);
+        anim.onComplete.add(() => {isShrekActing = false;});
     }
 
     // flips sprite about the y-axis
