@@ -25,6 +25,9 @@ export default function playState(game) {
     let STORE_Y;
     let STORE_RADIUS = 120;
 
+    let CREATURE_COUNT_X = 280;
+    let CREATURE_COUNT_Y = 10;
+
     // game stats
     let level = 1;
 
@@ -52,7 +55,7 @@ export default function playState(game) {
             collisionCheckFunction: () => {}
         }
     };
-    let coinIcon, coinText, heartGroup;
+    let coinIcon, coinText, heartGroup, iconBag;
     let isShrekActing = false;
 
     let storeUI;
@@ -95,6 +98,15 @@ export default function playState(game) {
         game.load.image("heart", "src/assets/heart.png");
         game.load.spritesheet("coin", "src/assets/coin.png", 128/8, 16);
         game.load.spritesheet("fairy", "src/assets/fairy.png", 14, 17);
+
+        // icons
+        game.load.image("donkeyIcon", "src/assets/donkeyIcon.png");
+        game.load.image("fairyIcon", "src/assets/fairyIcon.png");
+        game.load.image("gnomeIcon", "src/assets/gnomeIcon.png");
+        game.load.image("iconBag", "src/assets/iconBag.png");
+
+        // sounds
+        game.load.audio("net", "src/assets/sound/net.wav");
     }
     
     function create() {
@@ -124,6 +136,8 @@ export default function playState(game) {
         ACTION_KEY.onUp.add(() => {animateAction('chop');}, this);
         NET_KEY = game.input.keyboard.addKey(Phaser.Keyboard.S);
         NET_KEY.onUp.add(() => {animateAction('net')}, this);
+
+        createInventory();
     }
     
     
@@ -142,6 +156,13 @@ export default function playState(game) {
             }    
         });
 
+    }
+
+    function createInventory() {
+        const items = Object.keys(ITEM_MAP);
+        for (let i = 0; i < items.length; i++){ 
+            inventory[items[i]] = 0;
+        }
     }
 
     function addBackgroundScenery() {
@@ -287,14 +308,20 @@ export default function playState(game) {
             closeButtonCoords.y, 'X', () => {storeUI.destroy(); isStoreOpen = false;});
         closeButton.anchor.setTo(0, 0);
         storeUI.add(closeButton);
-
-        for(var i = 0; i < Object.keys(ITEM_MAP).length; ++i) {
-            let itemName = Object.keys(ITEM_MAP)[i];
+        const items = Object.keys(ITEM_MAP);
+        for(var i = 0; i < items.length; ++i) {
+            let itemName = items[i];
             let y = MARGIN * 2 * (i + 1);
             let coords = camera_izeCoordinates(MARGIN * 2, y);
             let itemButton = GenericButton(game, coords.x, coords.y, itemName, () => {
-                inventory.push(itemName);
-                ITEM_MAP.remove(itemName);
+                // ensure player has enough currency to buy this item
+                if (validatePurchase(items[i])) {
+                    inventory[itemName]+= 1;
+                    // decrease player currency
+                    gold -= items[i].cost;
+                } else {
+                    // display not enough currency warning
+                }
             });
             itemButton.anchor.setTo(1, 0.5);
             storeUI.add(itemButton);
@@ -305,8 +332,14 @@ export default function playState(game) {
         }
     }
 
+    function validatePurchase(item) {
+        return item && item.cost <= gold;
+    }
+
     function addStatOverlay() {
         heartGroup = game.add.group();
+
+        // add coins
         let coinCoords = camera_izeCoordinates(COIN_STAT_X, COIN_STAT_Y);
         coinIcon = game.add.sprite(coinCoords.x, coinCoords.y,'coin');
         coinIcon.animations.add('rotate', [0,1,2,3,4,5,6,7], 14, true);
@@ -317,12 +350,26 @@ export default function playState(game) {
         coinText = game.add.text(coinCoords.x + 20, coinCoords.y, ' x ' + gold, {font: 'Comic Sans MS', fill: FONT_COLOR, align: 'left', fontSize: '12px'});
         coinText.fixedToCamera = true;
 
+        // add hearts
         for(let i = 0; i < health; ++i) {
             let coords = camera_izeCoordinates(HEALTH_BAR_X + 18 * i, HEALTH_BAR_Y);
             let heart = game.add.sprite(coords.x, coords.y, 'heart');
             heart.fixedToCamera = true;
             heart.anchor.set(0,0);
             heartGroup.add(heart);
+        }
+
+        // add captured creatures
+        let bagCoords = camera_izeCoordinates(CREATURE_COUNT_X, CREATURE_COUNT_Y)
+        iconBag = game.add.image(bagCoords.x, bagCoords.y, "iconBag");
+        iconBag.anchor.setTo(0,0);
+        iconBag.fixedToCamera = true;
+        for(let i = 0; i < CreatureConstants.CREATURE_LIST.length - 1; ++i) {
+            let creature = CreatureConstants.CREATURE_LIST[i];
+            let creatureCoords = camera_izeCoordinates(CREATURE_COUNT_X + iconBag.width - 3 - (18 * i), CREATURE_COUNT_Y + (iconBag.height / 2));
+            creature.icon = game.add.image(creatureCoords.x, creatureCoords.y, creature.name + 'Icon');
+            creature.icon.fixedToCamera = true;
+            creature.icon.anchor.setTo(1,0.5);
         }
     }
 
@@ -427,13 +474,13 @@ export default function playState(game) {
 
             if(enemy.x > STORE_X - STORE_RADIUS && enemy.x < STORE_X) {
                 enemy.body.velocity.x = -speed;
-                if(enemy.direction = 1) {
+                if(enemy.direction === 1) {
                     flipSpriteDirection(enemy);
                 }
                 enemy.direction = -1;
                 return;
             } else if(enemy.x < STORE_X + STORE_RADIUS && enemy.x > STORE_X) {
-                if(enemy.direction = -1) {
+                if(enemy.direction === -1) {
                     flipSpriteDirection(enemy);
                 }
                 enemy.body.velocity.x = speed;

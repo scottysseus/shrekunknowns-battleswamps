@@ -1,11 +1,9 @@
 const CREATURE_NAMES = {
     DONKEY: "donkey",
-    PIXIE: "pixie",
+    FAIRY: "fairy",
     GNOME: "gnome",
     UNICORN: "unicorn"
 }
-
-const CREATURE_LIST = [DONKEY, PIXIE, UNICORN, GNOME];
 
 const DONKEY = {
     name: CREATURE_NAMES.DONKEY,
@@ -15,8 +13,8 @@ const DONKEY = {
     baseSpawnRate: 1800
 };
 
-const PIXIE = {
-    name: CREATURE_NAMES.PIXIE,
+const FAIRY = {
+    name: CREATURE_NAMES.FAIRY,
     price: 50,
     baseSpeed: 150,
     baseHealth: 1,
@@ -39,13 +37,15 @@ const GNOME = {
     baseSpawnRate: 1200
 };
 
+const CREATURE_LIST = [DONKEY, FAIRY, GNOME, UNICORN];
+
 const CreatureConstants = {
     CREATURE_NAMES,
     DONKEY,
     UNICORN,
-    PIXIE,
+    FAIRY,
     GNOME,
     CREATURE_LIST
-}; 
+};
 
 export default CreatureConstants;
