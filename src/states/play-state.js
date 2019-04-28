@@ -1,5 +1,6 @@
 import {FONT_COLOR, MARGIN, DescriptionStyle} from "../common/constants";
 import GenericButton from "../common/GenericButton";
+import ItemButton from "../common/ItemButton";
 import StoreMenu from "./storeMenu";
 import CreatureConstants from "./creatureConstants";
 
@@ -10,7 +11,9 @@ export default function playState(game) {
     
 
     const ITEM_MAP = {
-        "Fairie Dust": {descr: "Slows fall speed & adds a double jump", cost: 100}
+        "Fairie Dust": {descr: "Slows fall speed & adds a double jump", cost: 100},
+        "Big Fist": {descr: "Attacks do more damage and knocks back enemies farther", cost: 200},
+        "Swamp Bubble": {descr: "Takes one free hit & increaeses jump height while active", cost: 50}
     };
 
 
@@ -23,9 +26,9 @@ export default function playState(game) {
     let COIN_STAT_Y = 10;
     let STORE_X;
     let STORE_Y;
-    let STORE_RADIUS = 120;
+    let STORE_RADIUS = 180;
 
-    let CREATURE_COUNT_X = 280;
+    let CREATURE_COUNT_X = game.width - 82;
     let CREATURE_COUNT_Y = 10;
 
     // game stats
@@ -39,7 +42,7 @@ export default function playState(game) {
     let shrek;
     const SHREK_BASE_SPEED = 150;
     const SHREK_BASE_JUMP_SPEED = 525;
-    const SHREK_KNOCKBACK_TIME = 60; // 1 sec
+    const SHREK_KNOCKBACK_TIME = 45;
     const SHREK_KNOCKBACK_SPEED = 200;
     let actionSprites = {};
     let actionSpriteProps = {'chop': {
@@ -56,11 +59,17 @@ export default function playState(game) {
         }
     };
     let coinIcon, coinText, heartGroup, iconBag;
+    let icons = {};
     let isShrekActing = false;
 
     let storeUI;
     let choiceLabel;
     let enemies = [];
+    const CAPTURABLE_DURATION = 360;
+
+    let storePurchaseSound;
+    let storePurchaseDenied;
+    let netCaptureSound;
 
     // flags
     let isShrekFacingLeft = true;
@@ -68,7 +77,7 @@ export default function playState(game) {
     let isStoreOpen = false;
 
     // player stats
-    let gold = 0;
+    let gold = 1000;
     let inventory = {};
     let capturedCreatures = {};
     let health = 10;
@@ -97,16 +106,22 @@ export default function playState(game) {
         game.load.image("sky", "src/assets/sky.png");
         game.load.image("heart", "src/assets/heart.png");
         game.load.spritesheet("coin", "src/assets/coin.png", 128/8, 16);
-        game.load.spritesheet("fairy", "src/assets/fairy.png", 14, 17);
 
         // icons
         game.load.image("donkeyIcon", "src/assets/donkeyIcon.png");
         game.load.image("fairyIcon", "src/assets/fairyIcon.png");
         game.load.image("gnomeIcon", "src/assets/gnomeIcon.png");
         game.load.image("iconBag", "src/assets/iconBag.png");
+        game.load.image("iconBagOverlay", "src/assets/iconBagOverlay.png");
+
+        game.load.image("swampBubbleIcon", "src/assets/swampBubbleIcon.png");
+        game.load.image("fairyDustIcon", "src/assets/fairyDustIcon.png");
+        game.load.image("bigFistIcon", "src/assets/bigFistIcon.png");
 
         // sounds
         game.load.audio("net", "src/assets/sound/net.wav");
+        game.load.audio("purchase", "src/assets/sound/cashreg.wav");
+        game.load.audio("denied", "src/assets/sound/denied.wav");
     }
     
     function create() {
@@ -136,7 +151,11 @@ export default function playState(game) {
         ACTION_KEY.onUp.add(() => {animateAction('chop');}, this);
         NET_KEY = game.input.keyboard.addKey(Phaser.Keyboard.S);
         NET_KEY.onUp.add(() => {animateAction('net')}, this);
-
+        storePurchaseSound = game.add.audio("purchase");
+        storePurchaseDenied = game.add.audio("denied");
+        netCaptureSound = game.add.audio("net");
+        
+        
         createInventory();
     }
     
@@ -239,19 +258,27 @@ export default function playState(game) {
     function addEnemies() {
         enemies = [];
         for (let i = 0; i < 10; i++) {
+            spawnEnemy(CreatureConstants.FAIRY);
+        }
+        for (let i = 0; i < 4; i++) {
             spawnEnemy(CreatureConstants.DONKEY);
         }
     }
 
     function spawnEnemy(enemyTemplate) {
         let enemy = game.add.sprite(0, 0, enemyTemplate.name);
+        // copy enemy template to sprite
+        for (const [enemyParam, enemyParamValue] of Object.entries(enemyTemplate)) {
+            enemy[enemyParam] = enemyParamValue;
+        }
+
         enemy.anchor.setTo(0.5, 1);
 
         enemy.x = randomSpawnX();
-        enemy.y = GROUND_LEVEL;
+        enemy.y = enemyTemplate.flier ? GROUND_LEVEL - 100 : GROUND_LEVEL;
         game.physics.arcade.enable(enemy);
         enemy.body.bounce.y = BOUNCE;
-        enemy.body.gravity.y = GRAVITY;
+        enemy.body.gravity.y = enemyTemplate.flier ? 0 : GRAVITY;
         enemy.body.collideWorldBounds = true;
         enemy.animations.add(enemyTemplate.name + 'Walk', [0, 1, 2, 0], 12, false);
         enemy.direction = -1; // custom state
@@ -259,6 +286,7 @@ export default function playState(game) {
         enemy.name = enemyTemplate.name
         enemy.template = enemyTemplate;
         enemy.pauseTimer = 0;
+        enemy.capturableTimer = 0;
         enemies.push(enemy);
     }
 
@@ -295,45 +323,52 @@ export default function playState(game) {
         let sellButtonCoords = camera_izeCoordinates(game.width - (MARGIN * 2),
             game.height - (MARGIN * 2));
         let sellButton = GenericButton(game, sellButtonCoords.x, 
-            sellButtonCoords.y, 'SELL CREATURES', () => {Object.keys(capturedCreatures).forEach((creatureName) => {
-                let creature = capturedCreatures[creatureName];
-                gold += creature.price;
-                capturedCreatures[creatureName] = [];
-            })});
+            sellButtonCoords.y, 'SELL CREATURES', () => {
+                Object.keys(capturedCreatures).forEach((creatureName) => {
+                    let creature = capturedCreatures[creatureName];
+                    gold += creature.price;
+                    delete capturedCreatures[creatureName];
+                    storePurchaseSound.play();
+                    Object.keys(icons).forEach((creatureName) => {
+                        icons[creatureName].destroy();
+                    });
+                    icons = {};
+                })
+            });
         sellButton.anchor.setTo(1, 0.5);
         storeUI.add(sellButton);
 
         let closeButtonCoords = camera_izeCoordinates(game.width - (MARGIN * 2), MARGIN * 2);
         let closeButton = GenericButton(game, closeButtonCoords.x, 
-            closeButtonCoords.y, 'X', () => {storeUI.destroy(); isStoreOpen = false;});
+            closeButtonCoords.y-32, 'X', () => {storeUI.destroy(); isStoreOpen = false;});
         closeButton.anchor.setTo(0, 0);
         storeUI.add(closeButton);
+        let y = MARGIN;
         const items = Object.keys(ITEM_MAP);
+        let coords = camera_izeCoordinates(MARGIN * 2, y);
         for(var i = 0; i < items.length; ++i) {
             let itemName = items[i];
-            let y = MARGIN * 2 * (i + 1);
-            let coords = camera_izeCoordinates(MARGIN * 2, y);
-            let itemButton = GenericButton(game, coords.x, coords.y, itemName, () => {
+            const itemDesc = ITEM_MAP[items[i]].descr;
+            let itemButton = ItemButton(game, coords.x, coords.y, itemName, () => {
                 // ensure player has enough currency to buy this item
-                if (validatePurchase(items[i])) {
+                if (validatePurchase(ITEM_MAP[itemName], itemName)) {
                     inventory[itemName]+= 1;
-                    // decrease player currency
-                    gold -= items[i].cost;
+                    gold-= ITEM_MAP[itemName].cost;
+                    storePurchsaseSound.play();
                 } else {
-                    // display not enough currency warning
+                    storePurchaseDenied.play();
                 }
             });
-            itemButton.anchor.setTo(1, 0.5);
             storeUI.add(itemButton);
 
-            coords = camera_izeCoordinates(MARGIN * 4, y);
-            let itemDescr = game.add.text(coords.x, coords.y, ITEM_MAP[itemName].descr, DescriptionStyle);
+            let itemDescr = game.add.text(coords.x+25, coords.y+45, itemDesc, DescriptionStyle);
             storeUI.add(itemDescr);
+            coords.y += (MARGIN*3);
         }
     }
 
-    function validatePurchase(item) {
-        return item && item.cost <= gold;
+    function validatePurchase(item, itemName) {
+        return item && item.cost <= gold && inventory[itemName] === 0;
     }
 
     function addStatOverlay() {
@@ -364,13 +399,10 @@ export default function playState(game) {
         iconBag = game.add.image(bagCoords.x, bagCoords.y, "iconBag");
         iconBag.anchor.setTo(0,0);
         iconBag.fixedToCamera = true;
-        for(let i = 0; i < CreatureConstants.CREATURE_LIST.length - 1; ++i) {
-            let creature = CreatureConstants.CREATURE_LIST[i];
-            let creatureCoords = camera_izeCoordinates(CREATURE_COUNT_X + iconBag.width - 3 - (18 * i), CREATURE_COUNT_Y + (iconBag.height / 2));
-            creature.icon = game.add.image(creatureCoords.x, creatureCoords.y, creature.name + 'Icon');
-            creature.icon.fixedToCamera = true;
-            creature.icon.anchor.setTo(1,0.5);
-        }
+        iconBag.alpha = 0.7
+        let iconBagOverlay = game.add.image(bagCoords.x, bagCoords.y, "iconBagOverlay");
+        iconBagOverlay.anchor.setTo(0,0);
+        iconBagOverlay.fixedToCamera = true;
     }
 
     function updateStatOverlay() {
@@ -386,8 +418,26 @@ export default function playState(game) {
                 heart.visible = false;
             }
         }
+
+        Object.keys(capturedCreatures).forEach((creatureName) => {
+            if(icons[creatureName]) {
+                return;
+            }
+            let col = Object.keys(icons).length % 3;
+            let row = Math.floor(Object.keys(icons).length / 3);
+            let y = CREATURE_COUNT_Y + iconBag.height - 8 - (row * 18);
+            let x = CREATURE_COUNT_X + (col * 18) + 16 ;
+            let icon = game.add.image(x,y, creatureName + 'Icon');
+            icon.fixedToCamera = true;
+            icon.anchor.setTo(0.5, 1);
+            icons[creatureName] = icon;
+        });
     }
 
+    function updateCaptureBag() {
+
+    }
+    
     function updateShrek() {
         if(isStoreOpen) {
             game.physics.arcade.collide(shrek, groundPlatform);
@@ -456,6 +506,11 @@ export default function playState(game) {
         sprite.hitTimer--;
         sprite.tint = sprite.hitTimer % 4 >= 2 ? '0xff6666' : '0xffffff';
     }
+    
+    function updateCapturableEnemy(enemy) {
+        enemy.capturableTimer--;
+        enemy.alpha = enemy.capturableTimer % 4 >= 2 ? 0.1 : 1;
+    }
 
     function updateEnemies() {
         enemies.forEach((enemy) => {
@@ -466,11 +521,28 @@ export default function playState(game) {
                 return;
             }
 
+            if(enemy.health < 0 ) {
+                destroyEnemy(enemy);
+                return;
+            }
+
+            if(enemy.health === 0) {
+                updateCapturableEnemy(enemy);
+                // enemies are capturable only for a limited duration
+                if(enemy.capturableTimer === 0) {
+                    enemy.health = 1;
+                    enemy.alpha = 1;
+                }
+            }
+
             if(enemy.pauseTimer > 0) {
                 enemy.pauseTimer--;
                 return;
             }
             let speed = getEnemySpeedFromLevel(enemy.template);
+            if(enemy.health === 0) {
+                speed /= 2;
+            }
 
             if(enemy.x > STORE_X - STORE_RADIUS && enemy.x < STORE_X) {
                 enemy.body.velocity.x = -speed;
@@ -490,7 +562,7 @@ export default function playState(game) {
 
             enemy.body.velocity.x = speed * enemy.direction;
             enemy.animations.play(enemy.name + 'Walk');
-            if(Math.random() > 0.98) {
+            if(Math.random() < enemy.turnProb) {
                 enemy.direction *= -1;
                 flipSpriteDirection(enemy);
             }
@@ -521,12 +593,10 @@ export default function playState(game) {
 
     function knockbackSprite(sprite, adversary) {
         sprite.hitTimer = SHREK_KNOCKBACK_TIME;
-        if(adversary.body.x > sprite.body.x) {
-            sprite.body.velocity.x = -SHREK_KNOCKBACK_SPEED;
-        } else {
-            sprite.body.velocity.x = SHREK_KNOCKBACK_SPEED;
-        }
-        sprite.body.velocity.y = -SHREK_KNOCKBACK_SPEED;
+        let velocityX = sprite.knockbackVelocityX !== undefined ? sprite.knockbackVelocityX : SHREK_KNOCKBACK_SPEED;
+        let velocityY = sprite.knockbackVelocityY !== undefined ? sprite.knockbackVelocityY : SHREK_KNOCKBACK_SPEED;
+        sprite.body.velocity.x = (adversary.body.x > sprite.body.x ? -velocityX : velocityX);
+        sprite.body.velocity.y = velocityY;
     }
 
     function animateAction(actionSpriteName) {
@@ -588,9 +658,9 @@ export default function playState(game) {
             if (foundCollision) {
                 net.collidedEnemies.push(enemy);
                 capturedCreatures[enemy.name] = enemy.template;
-                enemies.splice(enemies.indexOf(enemy), 1);
-                enemy.destroy();
+                destroyEnemy(enemy)
                 console.log(capturedCreatures);
+                netCaptureSound.play();
             }
         });
         
@@ -608,10 +678,18 @@ export default function playState(game) {
             if (foundCollision) {
                 chop.collidedEnemies.push(enemy);
                 enemy.health = enemy.health - 1;
+                if(enemy.health === 0) {
+                    enemy.capturableTimer = CAPTURABLE_DURATION;
+                }
                 console.log("hit a mufukka");
                 knockbackSprite(enemy, shrek);
             }
         });
+    }
+
+    function destroyEnemy(enemy) {
+        enemies.splice(enemies.indexOf(enemy), 1);
+        enemy.destroy();
     }
 
     return {preload, create, update};
