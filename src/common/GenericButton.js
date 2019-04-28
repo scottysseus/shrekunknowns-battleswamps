@@ -11,6 +11,8 @@ const GenericButton = (game, x, y, btnName, callback) => {
     genericButton.events.onInputOut.add(() => {
         genericButton.alpha = 1;
     }, this);
+
+    return genericButton;
 };
 
 export default GenericButton;
