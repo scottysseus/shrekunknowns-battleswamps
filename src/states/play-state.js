@@ -1,6 +1,7 @@
 import {FONT_COLOR, MARGIN, DescriptionStyle} from "../common/constants";
 import GenericButton from "../common/GenericButton";
 import StoreMenu from "./storeMenu";
+import CreatureConstants from "./creatureConstants";
 
 export default function playState(game) {
 
@@ -12,12 +13,7 @@ export default function playState(game) {
         "Fairie Dust": {descr: "Slows fall speed & adds a double jump", cost: 100}
     };
 
-    const CREATURE_PRICES = {
-        "donkey": 500,
-        "pixie": 300,
-        "gnome": 200,
-        "unicorn": 100
-    }
+
 
     // locations
     let GROUND_LEVEL;
@@ -50,7 +46,6 @@ export default function playState(game) {
     let storeUI;
     let choiceLabel;
     let enemies = [];
-    const DONKEY_BASE_SPEED = 150;
 
     // flags
     let isShrekFacingLeft = true;
@@ -217,21 +212,34 @@ export default function playState(game) {
 
     function addEnemies() {
         for (let i = 0; i < 10; i++) {
-            let donkey = game.add.sprite(0, 0, 'donkey');
-            donkey.anchor.setTo(0.5, 1);
-
-            donkey.x = STORE_X - 600;
-            donkey.y = GROUND_LEVEL;
-            game.physics.arcade.enable(donkey);
-            donkey.body.bounce.y = BOUNCE;
-            donkey.body.gravity.y = GRAVITY;
-            donkey.body.collideWorldBounds = true;
-            donkey.animations.add('donkeyWalk', [0, 1, 2, 0], 12, false);
-            donkey.direction = -1; // custom state
-            donkey.health = 3;
-            donkey.name = 'donkey'
-            enemies.push(donkey);
+            spawnEnemy(CreatureConstants.DONKEY);
         }
+    }
+
+    function spawnEnemy(enemyTemplate) {
+        let enemy = game.add.sprite(0, 0, enemyTemplate.name);
+        enemy.anchor.setTo(0.5, 1);
+
+        enemy.x = randomSpawnX();
+        enemy.y = GROUND_LEVEL;
+        game.physics.arcade.enable(enemy);
+        enemy.body.bounce.y = BOUNCE;
+        enemy.body.gravity.y = GRAVITY;
+        enemy.body.collideWorldBounds = true;
+        enemy.animations.add(enemyTemplate.name + 'Walk', [0, 1, 2, 0], 12, false);
+        enemy.direction = -1; // custom state
+        enemy.health = enemyTemplate.baseHealth;
+        enemy.name = enemyTemplate.name
+        enemy.template = enemyTemplate;
+        enemies.push(enemy);
+    }
+
+    function randomSpawnX() {
+        let spawnX = Math.random() * game.world.width;
+        if(spawnX > STORE_X - STORE_RADIUS && spawnX < STORE_X + STORE_RADIUS) {
+            return randomSpawnX();
+        }
+        return spawnX
     }
 
     function addForegroundScenery() {
@@ -260,7 +268,7 @@ export default function playState(game) {
             game.height - (MARGIN * 2));
         let sellButton = GenericButton(game, sellButtonCoords.x, 
             sellButtonCoords.y, 'SELL CREATURES', () => {inventory.forEach((creature) => {
-                gold += CREATURE_PRICES[creature];
+                gold += CreatureConstants.CREATURE_PRICES[creature];
                 inventory.splice(inventory.indexOf(creature), 1);
             })});
         sellButton.anchor.setTo(1, 0.5);
@@ -398,15 +406,25 @@ export default function playState(game) {
         enemies.forEach((enemy) => {
             var isOnGround = game.physics.arcade.collide(enemy, groundPlatform);
 
-            if(enemy.x > STORE_X - STORE_RADIUS && enemy.x < STORE_X + STORE_RADIUS&& enemy.x < STORE_X) {
-                enemy.body.velocity.x = -DONKEY_BASE_SPEED;
+            let speed = getEnemySpeedFromLevel(enemy.template);
+
+            if(enemy.x > STORE_X - STORE_RADIUS && enemy.x < STORE_X) {
+                enemy.body.velocity.x = -speed;
+                if(enemy.direction = 1) {
+                    flipSpriteDirection(enemy);
+                }
+                enemy.direction = -1;
                 return;
-            } else if(enemy.x > STORE_X - STORE_RADIUS && enemy.x < STORE_X + STORE_RADIUS&& enemy.x > STORE_X) {
-                enemy.body.velocity.x = DONKEY_BASE_SPEED;
+            } else if(enemy.x < STORE_X + STORE_RADIUS && enemy.x > STORE_X) {
+                if(enemy.direction = -1) {
+                    flipSpriteDirection(enemy);
+                }
+                enemy.body.velocity.x = speed;
+                enemy.direction = 1;
                 return;
             }
 
-            enemy.body.velocity.x = DONKEY_BASE_SPEED * enemy.direction;
+            enemy.body.velocity.x = speed * enemy.direction;
             enemy.animations.play('donkeyWalk');
             if(Math.random() > 0.98) {
                 enemy.direction *= -1;
@@ -467,6 +485,10 @@ export default function playState(game) {
             x: game.camera.x + x,
             y: game.camera.y +y
         };
+    }
+
+    function getEnemySpeedFromLevel(enemyTemplate) {
+        return enemyTemplate.baseSpeed;
     }
 
     return {preload, create, update};
