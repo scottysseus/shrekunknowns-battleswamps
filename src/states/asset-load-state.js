@@ -9,6 +9,8 @@ export default function assetLoadState(game) {
         game.load.spritesheet('gnome', 'src/assets/gnome.png', 30, 50);
         game.load.spritesheet('fairy', 'src/assets/fairy.png', 56/4, 17);
         game.load.spritesheet('phoenix', 'src/assets/phoenix.png', 56, 56);
+        game.load.spritesheet('imp', 'src/assets/imp.png', 32, 48);
+        game.load.spritesheet('goblinWarrior', 'src/assets/goblinWarrior.png', 52, 72);
         game.load.image('tree1', 'src/assets/tree1.png');
         game.load.image('tree2', 'src/assets/tree2.png');
         game.load.image('tree3', 'src/assets/tree3.png');
@@ -32,6 +34,8 @@ export default function assetLoadState(game) {
         game.load.image("gnomeIcon", "src/assets/gnomeIcon.png");
         game.load.image("unicornIcon", "src/assets/unicornIcon.png");
         game.load.image("phoenixIcon", "src/assets/phoenixIcon.png");
+        game.load.image("impIcon", "src/assets/impIcon.png");
+        game.load.image("goblinWarriorIcon", "src/assets/goblinWarriorIcon.png");
         game.load.image("iconBag", "src/assets/iconBag.png");
         game.load.image("iconBagOverlay", "src/assets/iconBagOverlay.png");
 
