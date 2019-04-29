@@ -29,7 +29,7 @@ export default function instructionsState3(game) {
                 let icon = game.add.image(x,y, itemProps.icon);
                 ++col;
             });
-            game.add.text(200, ICON_Y, "These icons at the top of your screen\nindicate owned items. Except for Swamp Bubble, all\nitems can only be bought once.", DescriptionStyle);
+            game.add.text(200, ICON_Y, "These icons at the top of your screen\nindicate owned items. Except for Swamp Bubble,\nall items can only be bought once.", DescriptionStyle);
         }
     };
 }

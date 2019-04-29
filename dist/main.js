@@ -86,6 +86,37 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
 /***/ "./src/common/GenericButton.js":
 /*!*************************************!*\
   !*** ./src/common/GenericButton.js ***!
@@ -238,7 +269,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 var FONT_COLOR = "#589b00";
 var BaseStyle = {
-  font: 'Comic Sans MS',
+  font: 'Gloria Hallelujah',
   fill: FONT_COLOR,
   align: 'left'
 };
@@ -320,6 +351,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _states_instructions_state4__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./states/instructions-state4 */ "./src/states/instructions-state4.js");
 /* harmony import */ var _states_game_over_state__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./states/game-over-state */ "./src/states/game-over-state.js");
 /* harmony import */ var _states_asset_load_state__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./states/asset-load-state */ "./src/states/asset-load-state.js");
+/* harmony import */ var _states_font_load_state__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./states/font-load-state */ "./src/states/font-load-state.js");
+
 
 
 
@@ -337,7 +370,8 @@ game.state.add("Instructions3", Object(_states_instructions_state3__WEBPACK_IMPO
 game.state.add("Instructions4", Object(_states_instructions_state4__WEBPACK_IMPORTED_MODULE_5__["default"])(game));
 game.state.add("GameOver", Object(_states_game_over_state__WEBPACK_IMPORTED_MODULE_6__["default"])(game));
 game.state.add("AssetLoad", Object(_states_asset_load_state__WEBPACK_IMPORTED_MODULE_7__["default"])(game));
-game.state.start("AssetLoad");
+game.state.add("FontLoad", Object(_states_font_load_state__WEBPACK_IMPORTED_MODULE_8__["default"])(game));
+game.state.start("FontLoad");
 
 /***/ }),
 
@@ -359,7 +393,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function aboutState(game) {
   var textCrawlStyle = {
-    font: '15px Comic Sans MS',
+    font: '15px Gloria Hallelujah',
     fill: _common_constants__WEBPACK_IMPORTED_MODULE_0__["FONT_COLOR"],
     align: 'left',
     wordWrap: true,
@@ -610,6 +644,45 @@ function entryState(game) {
 
 /***/ }),
 
+/***/ "./src/states/font-load-state.js":
+/*!***************************************!*\
+  !*** ./src/states/font-load-state.js ***!
+  \***************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return fontLoadState; });
+function fontLoadState(game) {
+  window.fontsLoaded = function () {
+    game.state.start('AssetLoad');
+  };
+
+  return {
+    preload: function preload() {
+      //  The Google WebFont Loader will look for this object, so create it before loading the script.
+      global.WebFontConfig = {
+        //  'active' means all requested fonts have finished loading
+        //  We set a 1 second delay before calling 'createText'.
+        //  For some reason if we don't the browser cannot render the text the first time it's created.
+        active: function active() {
+          game.time.events.add(Phaser.Timer.SECOND, fontsLoaded, this);
+        },
+        //  The Google Fonts we want to load (specify as many as you like in the array)
+        google: {
+          families: ['Gloria Hallelujah']
+        }
+      }; //  Load the Google WebFont Loader script
+
+      game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
+    }
+  };
+}
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
 /***/ "./src/states/game-over-state.js":
 /*!***************************************!*\
   !*** ./src/states/game-over-state.js ***!
@@ -706,7 +779,7 @@ function instructionsState2(game) {
       var donkeyY = 350;
       donkeySprite = game.add.sprite(90, donkeyY, "donkey");
       donkeySprite.animations.add("donkeyWalk", [0, 1, 2, 0], 12, true);
-      game.add.text(200, donkeyY, "Attacking creatures damages them.Critically damaged\n" + "creatures can be captured with the net. Creatures flash\n" + "when critically damaged. Hitting a critically damaged\n" + "creature destroys it.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      game.add.text(200, donkeyY, "Attacking creatures damages them. Critically\n" + "damaged creatures can be captured with the\n" + "net. Creatures flash when critically damaged.\n" + "Hitting a critically damaged\n" + "creature destroys it.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
     },
     update: function update() {
       ++frame;
@@ -758,7 +831,7 @@ function instructionsState3(game) {
         var x = BAG_X + 6;
         var icon = game.add.image(x, y, creatureName + 'Icon');
         var text = game.add.text(x + 16, y, ' x ' + 0, {
-          font: 'Comic Sans MS',
+          font: 'Gloria Hallelujah',
           fill: _common_constants__WEBPACK_IMPORTED_MODULE_1__["FONT_COLOR"],
           align: 'left',
           fontSize: '12px'
@@ -768,14 +841,14 @@ function instructionsState3(game) {
         icon.anchor.setTo(0, 0.5);
         ++row;
       });
-      game.add.text(180, 180, "The bag displays the number of creatures yet to be sold.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      game.add.text(180, 180, "The bag displays the number of creatures yet\nto be sold.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
       var COIN_Y = 340;
       var COIN_X = 60;
       var coinSprite = game.add.sprite(COIN_X, COIN_Y, "coin");
       coinSprite.animations.add('rotate', [0, 1, 2, 3, 4, 5, 6, 7], 14, true);
       coinSprite.animations.play('rotate');
       game.add.text(COIN_X + 20, COIN_Y, ' x ' + 0, {
-        font: 'Comic Sans MS',
+        font: 'Gloria Hallelujah',
         fill: _common_constants__WEBPACK_IMPORTED_MODULE_1__["FONT_COLOR"],
         align: 'left',
         fontSize: '12px'
@@ -829,7 +902,7 @@ function instructionsState3(game) {
         var icon = game.add.image(x, y, itemProps.icon);
         ++col;
       });
-      game.add.text(200, ICON_Y, "These icons at the top of your screen\nindicate owned items. Except for Swamp Bubble, all\nitems can only be bought once.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      game.add.text(200, ICON_Y, "These icons at the top of your screen\nindicate owned items. Except for Swamp Bubble,\nall items can only be bought once.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
     }
   };
 }
@@ -1257,7 +1330,7 @@ function playState(game) {
     coinIcon.anchor.setTo(0, 0);
     coinIcon.fixedToCamera = true;
     coinText = game.add.text(coinCoords.x + 20, coinCoords.y, ' x ' + gold, {
-      font: 'Comic Sans MS',
+      font: 'Gloria Hallelujah',
       fill: _common_constants__WEBPACK_IMPORTED_MODULE_0__["FONT_COLOR"],
       align: 'left',
       fontSize: '12px'
@@ -1288,7 +1361,7 @@ function playState(game) {
       var x = BAG_X + 6;
       var icon = game.add.image(x, y, creatureName + 'Icon');
       var text = game.add.text(x + 16, y, ' x ' + creatureCounts[creatureName], {
-        font: 'Comic Sans MS',
+        font: 'Gloria Hallelujah',
         fill: _common_constants__WEBPACK_IMPORTED_MODULE_0__["FONT_COLOR"],
         align: 'left',
         fontSize: '12px'

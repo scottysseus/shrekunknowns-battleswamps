@@ -18,7 +18,7 @@ export default function fontLoadState(game) {
 
                 //  The Google Fonts we want to load (specify as many as you like in the array)
                 google: {
-                    families: ['Press Start 2P']
+                    families: ['Gloria Hallelujah']
                 }
             };
 

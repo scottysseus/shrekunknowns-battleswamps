@@ -6,6 +6,7 @@ import instructionsState3 from "./states/instructions-state3";
 import instructionsState4 from "./states/instructions-state4";
 import gameOverState from "./states/game-over-state";
 import assetLoadState from "./states/asset-load-state";
+import fontLoadState from "./states/font-load-state";
 
 var game = new Phaser.Game(640, 512, Phaser.AUTO, Phaser.AUTO, 'game', undefined, undefined, false);
 game.state.add("Entry", entryState(game));
@@ -16,4 +17,5 @@ game.state.add("Instructions3", instructionsState3(game));
 game.state.add("Instructions4", instructionsState4(game));
 game.state.add("GameOver", gameOverState(game));
 game.state.add("AssetLoad", assetLoadState(game));
-game.state.start("AssetLoad");
+game.state.add("FontLoad", fontLoadState(game));
+game.state.start("FontLoad");

@@ -423,7 +423,7 @@ export default function playState(game) {
         coinIcon.anchor.setTo(0,0);
         coinIcon.fixedToCamera = true;
         
-        coinText = game.add.text(coinCoords.x + 20, coinCoords.y, ' x ' + gold, {font: 'Comic Sans MS', fill: FONT_COLOR, align: 'left', fontSize: '12px'});
+        coinText = game.add.text(coinCoords.x + 20, coinCoords.y, ' x ' + gold, {font: 'Gloria Hallelujah', fill: FONT_COLOR, align: 'left', fontSize: '12px'});
         coinText.fixedToCamera = true;
 
         // add hearts
@@ -451,7 +451,7 @@ export default function playState(game) {
             let y = BAG_Y + iconBag.height - 16 - (row * 23);
             let x = BAG_X + 6;
             let icon = game.add.image(x,y, creatureName + 'Icon');
-            let text = game.add.text(x + 16, y, ' x ' + creatureCounts[creatureName], {font: 'Comic Sans MS', fill: FONT_COLOR, align: 'left', fontSize: '12px'});
+            let text = game.add.text(x + 16, y, ' x ' + creatureCounts[creatureName], {font: 'Gloria Hallelujah', fill: FONT_COLOR, align: 'left', fontSize: '12px'});
             text.anchor.setTo(0, 0.5);
             text.fixedToCamera = true;
             creatureCountText[creatureName] = text;

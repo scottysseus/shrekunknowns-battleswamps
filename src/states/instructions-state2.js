@@ -30,9 +30,10 @@ export default function instructionsState2(game) {
             let donkeyY = 350;
             donkeySprite = game.add.sprite(90, donkeyY, "donkey");
             donkeySprite.animations.add("donkeyWalk", [0, 1, 2, 0], 12, true);
-            game.add.text(200, donkeyY, "Attacking creatures damages them.Critically damaged\n" +
-                                        "creatures can be captured with the net. Creatures flash\n" +
-                                        "when critically damaged. Hitting a critically damaged\n" +
+            game.add.text(200, donkeyY, "Attacking creatures damages them. Critically\n" +
+                                        "damaged creatures can be captured with the\n" +
+                                        "net. Creatures flash when critically damaged.\n" +
+                                        "Hitting a critically damaged\n" +
                                         "creature destroys it.", DescriptionStyle);
         },
         update: function() {
