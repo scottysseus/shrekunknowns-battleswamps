@@ -85,7 +85,7 @@ export default function playState(game) {
     let isStoreOpen = false;
 
     // player stats
-    let gold = 1000;
+    let gold = 0;
     let inventory = {};
     let inventoryDisplay = {};
     let capturedCreatures = [];

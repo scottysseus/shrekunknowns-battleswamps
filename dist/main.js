@@ -918,7 +918,7 @@ function playState(game) {
   var bouncing = false;
   var isStoreOpen = false; // player stats
 
-  var gold = 1000;
+  var gold = 0;
   var inventory = {};
   var inventoryDisplay = {};
   var capturedCreatures = [];
