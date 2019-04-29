@@ -36,7 +36,7 @@ export default function instructionsState3(game) {
             let donkeyY = ICON_Y + 120;
             donkeySprite = game.add.sprite(90, donkeyY, "donkey");
             donkeySprite.animations.add("donkeyWalk", [0, 1, 2, 0], 12, true);
-            game.add.text(200, donkeyY, "Critically damaged enemies can be captured\nwith the net. Enemies flash when\ncritically damaged.", DescriptionStyle);
+            game.add.text(200, donkeyY, "Critically damaged enemies can be captured\nwith the net. Enemies flash when\ncritically damaged. Hitting a critically damaged\nenemy destroys it.", DescriptionStyle);
         },
         update: function() {
             ++frame;

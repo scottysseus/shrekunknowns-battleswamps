@@ -809,7 +809,7 @@ function instructionsState3(game) {
       var donkeyY = ICON_Y + 120;
       donkeySprite = game.add.sprite(90, donkeyY, "donkey");
       donkeySprite.animations.add("donkeyWalk", [0, 1, 2, 0], 12, true);
-      game.add.text(200, donkeyY, "Critically damaged enemies can be captured\nwith the net. Enemies flash when\ncritically damaged.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      game.add.text(200, donkeyY, "Critically damaged enemies can be captured\nwith the net. Enemies flash when\ncritically damaged. Hitting a critically damaged\nenemy destroys it.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
     },
     update: function update() {
       ++frame;
