@@ -1,5 +1,6 @@
 import StateTransitionButton from "../common/StateTransitionButton";
 import TitleText from '../common/TitleText';
+import playState from "./play-state";
 
 const TITLE_Y = 70;
 
