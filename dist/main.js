@@ -948,8 +948,8 @@ function playState(game) {
     game.camera.follow(shrek, Phaser.Camera.FOLLOW_LOCKON);
     _creatureConstants__WEBPACK_IMPORTED_MODULE_4__["default"].CREATURE_LIST.forEach(function (creatureProps) {
       creatureCounts[creatureProps.name] = 0;
-    });
-    addForegroundScenery();
+    }); // addForegroundScenery();
+
     addStatOverlay();
     SPACE_BAR = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     SPACE_BAR.onUp.add(toggleStore, this);
@@ -1119,6 +1119,36 @@ function playState(game) {
   }
 
   function addForegroundScenery() {
+    for (var i = 0; i < 12; ++i) {
+      var rand = Math.random();
+      var imageName = void 0;
+
+      if (rand < 0.33) {
+        imageName = 'tree1';
+      } else if (rand < 0.66) {
+        imageName = 'tree2';
+      } else {
+        imageName = 'tree3';
+      }
+
+      var n = new Date().getMilliseconds();
+      var treeX = void 0,
+          treeY = void 0;
+      treeX = i * 6400 / 40;
+
+      if (n % 2 == 0) {
+        treeX -= 13;
+        treeY = GROUND_LEVEL + 35;
+      } else {
+        treeX += 13;
+        treeY = GROUND_LEVEL + 45;
+      }
+
+      var treeImage = game.add.image(treeX, treeY, imageName);
+      treeImage.alpha = 0.75;
+      treeImage.anchor.setTo(0.5, 1);
+    }
+
     game.add.sprite(150, game.world.height - 215, 'tree1');
     game.add.sprite(400, game.world.height - 115, "berryBush");
     game.add.sprite(500, game.world.height - 270, 'tree2');
