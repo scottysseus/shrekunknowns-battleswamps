@@ -258,22 +258,22 @@ var ITEM_MAP = {
   "Swamp Bubble": {
     icon: "swampBubbleIcon",
     descr: "Takes one free hit & adds bounce ability",
-    cost: 60
+    cost: 40
   },
   "Fart in a Jar": {
     icon: "fartJarIcon",
     descr: "Adds double-jump ability",
-    cost: 100
-  },
-  "Fairie Dust": {
-    icon: "fairieDustIcon",
-    descr: "Slows fall speed",
-    cost: 220
+    cost: 60
   },
   "Big Onion": {
     icon: "bigFistIcon",
     descr: "Higher damage and knock back",
-    cost: 300
+    cost: 80
+  },
+  "Fairie Dust": {
+    icon: "fairieDustIcon",
+    descr: "Slows fall speed",
+    cost: 100
   }
 };
 
