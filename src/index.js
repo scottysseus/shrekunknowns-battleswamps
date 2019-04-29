@@ -3,6 +3,7 @@ import aboutState from "./states/about-state";
 import instructionsState from "./states/instructions-state";
 import instructionsState2 from "./states/instructions-state2";
 import instructionsState3 from "./states/instructions-state3";
+import instructionsState4 from "./states/instructions-state4";
 import gameOverState from "./states/game-over-state";
 import assetLoadState from "./states/asset-load-state";
 
@@ -12,6 +13,7 @@ game.state.add("About", aboutState(game));
 game.state.add("Instructions", instructionsState(game));
 game.state.add("Instructions2", instructionsState2(game));
 game.state.add("Instructions3", instructionsState3(game));
+game.state.add("Instructions4", instructionsState4(game));
 game.state.add("GameOver", gameOverState(game));
 game.state.add("AssetLoad", assetLoadState(game));
 game.state.start("AssetLoad");

@@ -1,4 +1,4 @@
-import {FONT_COLOR, MARGIN, DescriptionStyle} from "../common/constants";
+import {ITEM_MAP, FONT_COLOR, MARGIN, DescriptionStyle} from "../common/constants";
 import GenericButton from "../common/GenericButton";
 import ItemButton from "../common/ItemButton";
 import StoreMenu from "./storeMenu";
@@ -9,13 +9,7 @@ export default function playState(game) {
     const GRAVITY = 600*2;
     const BOUNCE = 0;
 
-    const ITEM_MAP = {
-        "Speed": {icon: "speedIcon" , descr: "Doubles movement speed", cost: 80},
-        "Fart in a Jar": {icon: "fartJarIcon" , descr: "Adds double-jump ability", cost: 150},
-        "Fairie Dust": {icon: "fairieDustIcon" , descr: "Slows fall speed", cost: 200},
-        "Big Fist": {icon: "bigFistIcon" , descr: "Higher damage and knock back", cost: 300},
-        "Swamp Bubble": {icon: "swampBubbleIcon" , descr: "Takes one free hit & adds bounce ability", cost: 300},
-    };
+
 
     // locations
     let GROUND_LEVEL;
@@ -691,7 +685,6 @@ export default function playState(game) {
             kbX *= 1;
             kbY *= 5;
         }
-        console.log("knockback", kbX, kbY);
         let velocityX = kbX !== undefined ? kbX : SHREK_KNOCKBACK_SPEED;
         let velocityY = kbY !== undefined ? kbY : -SHREK_KNOCKBACK_SPEED;
         sprite.body.velocity.x = (adversary.body.x > sprite.body.x ? -velocityX : velocityX);
