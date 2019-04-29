@@ -682,13 +682,39 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function instructionsState2(game) {
-  var instructionsText = 'Controls:\nMove left with left arrow key.\nMove right with right arrow key.\nJump with up arrow key.\nFall fast* with down arrow key.\n' + 'Attack creatures with \"A\" key.\nUse net to catch creatures with \"S\" key.\nOpen the Shoppe with Spacebar**.\n\nCreatures can not be caught utill they are weak enough.\nHit creatures so that way they can be catchable.' + '\n\n*Swamp Bubble Power-up only.\n**Shrek needs to be standing at the Shoppe.';
+  var donkeySprite;
+  var frame = 0;
+  var keyDescriptionMap = {
+    'ARROW KEYS': 'Movement*.',
+    'A': 'Attack creatures.',
+    'S': 'Capture creatures.',
+    'SPACEBAR': 'Open shoppe menu**.'
+  };
+  var instructionsText = '*The DOWN key performs a bounce only with the Swamp Bubble\n  Power-up enabled.\n**Shrek needs to be standing at the Shoppe.';
   return {
     create: function create() {
       Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 60, 30, '< Back', "Instructions");
       var nextButton = Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, game.width - 60, 30, 'Next >', "Instructions3");
       nextButton.anchor.setTo(1, 0);
-      var generatedText = game.add.text(60, 90, instructionsText, _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      game.add.text(60, 90, "CONTROLS:", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      Object.keys(keyDescriptionMap).forEach(function (key, i) {
+        game.add.text(60, 120 + i * 18, key, _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+        game.add.text(240, 120 + i * 18, keyDescriptionMap[key], _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      });
+      game.add.text(60, 230, instructionsText, _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      game.add.text(60, 320, "COMBAT:", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      var donkeyY = 350;
+      donkeySprite = game.add.sprite(90, donkeyY, "donkey");
+      donkeySprite.animations.add("donkeyWalk", [0, 1, 2, 0], 12, true);
+      game.add.text(200, donkeyY, "Attacking creatures damages them.Critically damaged\n" + "creatures can be captured with the net. Creatures flash\n" + "when critically damaged. Hitting a critically damaged\n" + "creature destroys it.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+    },
+    update: function update() {
+      ++frame;
+      donkeySprite.alpha = frame % 4 >= 2 ? 0.1 : 1;
+
+      if (frame > 2000000000) {
+        frame = 0;
+      }
     }
   };
 }
@@ -742,7 +768,7 @@ function instructionsState3(game) {
         icon.anchor.setTo(0, 0.5);
         ++row;
       });
-      game.add.text(180, 180, "The bag to the left displays the number of\ncreatures yet to be sold.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      game.add.text(180, 180, "The bag displays the number of creatures yet to be sold.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
       var COIN_Y = 340;
       var COIN_X = 60;
       var coinSprite = game.add.sprite(COIN_X, COIN_Y, "coin");
@@ -783,8 +809,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function instructionsState3(game) {
-  var donkeySprite;
-  var frame = 0;
   return {
     create: function create() {
       Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 60, 30, '< Back', "Instructions3");
@@ -806,18 +830,6 @@ function instructionsState3(game) {
         ++col;
       });
       game.add.text(200, ICON_Y, "These icons at the top of your screen\nindicate owned items. Except for Swamp Bubble, all\nitems can only be bought once.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
-      var donkeyY = ICON_Y + 120;
-      donkeySprite = game.add.sprite(90, donkeyY, "donkey");
-      donkeySprite.animations.add("donkeyWalk", [0, 1, 2, 0], 12, true);
-      game.add.text(200, donkeyY, "Critically damaged enemies can be captured\nwith the net. Enemies flash when\ncritically damaged. Hitting a critically damaged\nenemy destroys it.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
-    },
-    update: function update() {
-      ++frame;
-      donkeySprite.alpha = frame % 4 >= 2 ? 0.1 : 1;
-
-      if (frame > 2000000000) {
-        frame = 0;
-      }
     }
   };
 }

@@ -30,7 +30,7 @@ export default function instructionsState3(game) {
                 icon.anchor.setTo(0, 0.5);
                 ++row;
             });
-            game.add.text(180, 180, "The bag to the left displays the number of\ncreatures yet to be sold.", DescriptionStyle);
+            game.add.text(180, 180, "The bag displays the number of creatures yet to be sold.", DescriptionStyle);
 
             let COIN_Y = 340
             let COIN_X = 60;

@@ -3,8 +3,6 @@ import {ITEM_MAP, FONT_COLOR, ButtonStyle, DescriptionStyle} from "../common/con
 import playState from "./play-state";
 import CreatureConstants from "./creatureConstants";
 export default function instructionsState3(game) {
-    let donkeySprite;
-    let frame = 0;
 
     return {
         create: function () {
@@ -32,18 +30,6 @@ export default function instructionsState3(game) {
                 ++col;
             });
             game.add.text(200, ICON_Y, "These icons at the top of your screen\nindicate owned items. Except for Swamp Bubble, all\nitems can only be bought once.", DescriptionStyle);
-
-            let donkeyY = ICON_Y + 120;
-            donkeySprite = game.add.sprite(90, donkeyY, "donkey");
-            donkeySprite.animations.add("donkeyWalk", [0, 1, 2, 0], 12, true);
-            game.add.text(200, donkeyY, "Critically damaged enemies can be captured\nwith the net. Enemies flash when\ncritically damaged. Hitting a critically damaged\nenemy destroys it.", DescriptionStyle);
-        },
-        update: function() {
-            ++frame;
-            donkeySprite.alpha = frame % 4 >= 2 ? 0.1 : 1;
-            if(frame > 2000000000) {
-                frame = 0;
-            }
         }
     };
 }
