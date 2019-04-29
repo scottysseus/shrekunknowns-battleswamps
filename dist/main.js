@@ -410,9 +410,9 @@ function assetLoadState(game) {
     game.load.image("store", "src/assets/store.png");
     game.load.image("forestBackground", "src/assets/forestBackground.png");
     game.load.image("storeBackground", "src/assets/storeBackground.png");
-    game.load.spritesheet("chop", "src/assets/chop.png", 120 / 3, 64);
+    game.load.spritesheet("chop", "src/assets/chop.png", 68, 90);
     game.load.spritesheet("bigfist", "src/assets/bigfist.png", 192 / 3, 64);
-    game.load.spritesheet("net", "src/assets/net.png", 288 / 3, 108);
+    game.load.spritesheet("net", "src/assets/net.png", 110, 108);
     game.load.image("sky", "src/assets/sky.png");
     game.load.image("heart", "src/assets/heart.png");
     game.load.spritesheet("coin", "src/assets/coin.png", 128 / 8, 16);
@@ -872,9 +872,11 @@ function playState(game) {
   var SHREK_KNOCKBACK_TIME = 45;
   var SHREK_KNOCKBACK_SPEED = 200;
   var actionSprites = {};
+  var actionArmFromRight = 16; // distance from shoulder socket to rightside of sprite frame
+
   var actionSpriteProps = {
     'chop': {
-      speed: 36,
+      speed: 30,
       collisionCheckFunction: function collisionCheckFunction() {
         checkChopCollision(false);
       }
@@ -1578,7 +1580,9 @@ function playState(game) {
     var actionSprite = actionSprites[actionSpriteName].sprite;
     var animationName = actionSprites[actionSpriteName].animationName;
     actionSprite.alpha = 1;
-    actionSprite.anchor.setTo(1, 0.5);
+    var frameWidth = actionSprite.animations.currentFrame.width;
+    var xPercent = (frameWidth - actionArmFromRight) / frameWidth;
+    actionSprite.anchor.setTo(xPercent, 0.5);
     anchorActionSprite(actionSprite);
     var anim = actionSprite.animations.play(animationName);
     anim.onComplete.add(function () {

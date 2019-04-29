@@ -41,8 +41,9 @@ export default function playState(game) {
     const SHREK_KNOCKBACK_TIME = 45;
     const SHREK_KNOCKBACK_SPEED = 200;
     let actionSprites = {};
+    let actionArmFromRight = 16; // distance from shoulder socket to rightside of sprite frame
     let actionSpriteProps = {'chop': {
-            speed: 36,
+            speed: 30,
             collisionCheckFunction: () => { checkChopCollision(false); }
         }, 
         'net': {
@@ -727,7 +728,9 @@ export default function playState(game) {
         let actionSprite = actionSprites[actionSpriteName].sprite;
         let animationName = actionSprites[actionSpriteName].animationName;
         actionSprite.alpha = 1;
-        actionSprite.anchor.setTo(1, 0.5);
+        let frameWidth = actionSprite.animations.currentFrame.width;
+        let xPercent = ((frameWidth) - actionArmFromRight) / (frameWidth);
+        actionSprite.anchor.setTo(xPercent, 0.5);
         anchorActionSprite(actionSprite);
         let anim = actionSprite.animations.play(animationName);
         anim.onComplete.add(() => {isShrekActing = false;});
