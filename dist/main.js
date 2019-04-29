@@ -352,6 +352,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _states_game_over_state__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./states/game-over-state */ "./src/states/game-over-state.js");
 /* harmony import */ var _states_asset_load_state__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./states/asset-load-state */ "./src/states/asset-load-state.js");
 /* harmony import */ var _states_font_load_state__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./states/font-load-state */ "./src/states/font-load-state.js");
+/* harmony import */ var _states_victory_state__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./states/victory-state */ "./src/states/victory-state.js");
+
 
 
 
@@ -371,6 +373,7 @@ game.state.add("Instructions4", Object(_states_instructions_state4__WEBPACK_IMPO
 game.state.add("GameOver", Object(_states_game_over_state__WEBPACK_IMPORTED_MODULE_6__["default"])(game));
 game.state.add("AssetLoad", Object(_states_asset_load_state__WEBPACK_IMPORTED_MODULE_7__["default"])(game));
 game.state.add("FontLoad", Object(_states_font_load_state__WEBPACK_IMPORTED_MODULE_8__["default"])(game));
+game.state.add("Victory", Object(_states_victory_state__WEBPACK_IMPORTED_MODULE_9__["default"])(game));
 game.state.start("FontLoad");
 
 /***/ }),
@@ -931,7 +934,9 @@ __webpack_require__.r(__webpack_exports__);
 
 function playState(game) {
   var GRAVITY = 600 * 2;
-  var BOUNCE = 0; // locations
+  var BOUNCE = 0;
+  var GOLD_TO_WIN = 800;
+  var hasBoughtBubble = false; // locations
 
   var GROUND_LEVEL;
   var HEALTH_BAR_X = 10;
@@ -1270,6 +1275,10 @@ function playState(game) {
         delete capturedCreatures[i];
         storePurchaseSound.play();
         creatureCounts[creatureName] = 0;
+
+        if (gold >= GOLD_TO_WIN && hasBoughtAllItems()) {
+          game.state.start("Victory");
+        }
       });
       capturedCreatures = [];
     });
@@ -1298,6 +1307,7 @@ function playState(game) {
 
           if (itemName === "Swamp Bubble") {
             bubbleGetSound.play();
+            hasBoughtBubble = true;
           } else {
             storePurchaseSound.play();
           }
@@ -1329,7 +1339,7 @@ function playState(game) {
     coinIcon.animations.play('rotate');
     coinIcon.anchor.setTo(0, 0);
     coinIcon.fixedToCamera = true;
-    coinText = game.add.text(coinCoords.x + 20, coinCoords.y, ' x ' + gold, {
+    coinText = game.add.text(coinCoords.x + 20, coinCoords.y, ' x ' + gold + "/" + GOLD_TO_WIN, {
       font: 'Gloria Hallelujah',
       fill: _common_constants__WEBPACK_IMPORTED_MODULE_0__["FONT_COLOR"],
       align: 'left',
@@ -1378,7 +1388,7 @@ function playState(game) {
   function updateStatOverlay() {
     coinText.x = COIN_STAT_X + 20;
     coinText.y = COIN_STAT_Y.y;
-    coinText.text = ' x ' + gold;
+    coinText.text = ' x ' + gold + '/' + GOLD_TO_WIN;
 
     for (var i = 0; i < heartGroup.children.length; ++i) {
       var heart = heartGroup.getChildAt(i);
@@ -1781,6 +1791,22 @@ function playState(game) {
     }
   }
 
+  function hasBoughtAllItems() {
+    for (var i = 0; i < Object.keys(inventory).length; ++i) {
+      var itemName = Object.keys(inventory)[i];
+
+      if (itemName === "Swamp Bubble") {
+        if (!hasBoughtBubble) {
+          return false;
+        }
+      } else if (inventory[itemName] < 1) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   return {
     preload: preload,
     create: create,
@@ -1818,6 +1844,36 @@ function StoreMenu(game) {
   menuContainer.bringToTop();
   menuContainer.alpha = 0.75;
   return menuContainer;
+}
+
+/***/ }),
+
+/***/ "./src/states/victory-state.js":
+/*!*************************************!*\
+  !*** ./src/states/victory-state.js ***!
+  \*************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return victoryState; });
+/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
+/* harmony import */ var _common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/StateTransitionButton */ "./src/common/StateTransitionButton.js");
+/* harmony import */ var _common_TitleText__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/TitleText */ "./src/common/TitleText.js");
+
+
+
+function victoryState(game) {
+  function create() {
+    Object(_common_TitleText__WEBPACK_IMPORTED_MODULE_2__["default"])(game, game.width / 2, 90, 'Victory!');
+    Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_1__["default"])(game, 60, 30, '< Back', "Entry");
+    game.add.text(60, 120, "You can buy back your swamp! And all it took was the lives\nof a few fairy tale creatures!", _common_constants__WEBPACK_IMPORTED_MODULE_0__["DescriptionStyle"]);
+  }
+
+  return {
+    create: create
+  };
 }
 
 /***/ })

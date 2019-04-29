@@ -9,7 +9,8 @@ export default function playState(game) {
     const GRAVITY = 600*2;
     const BOUNCE = 0;
 
-
+    const GOLD_TO_WIN = 800;
+    let hasBoughtBubble = false;
 
     // locations
     let GROUND_LEVEL;
@@ -367,7 +368,9 @@ export default function playState(game) {
                     delete capturedCreatures[i];
                     storePurchaseSound.play();
                     creatureCounts[creatureName] = 0;
-                    
+                    if(gold >= GOLD_TO_WIN && hasBoughtAllItems()) {
+                        game.state.start("Victory");
+                    }
                 });
                 capturedCreatures = [];
             });
@@ -393,6 +396,7 @@ export default function playState(game) {
                     gold-= ITEM_MAP[itemName].cost;
                     if (itemName === "Swamp Bubble") {
                         bubbleGetSound.play();
+                        hasBoughtBubble = true;
                     } else {
                         storePurchaseSound.play();
                     }
@@ -423,7 +427,7 @@ export default function playState(game) {
         coinIcon.anchor.setTo(0,0);
         coinIcon.fixedToCamera = true;
         
-        coinText = game.add.text(coinCoords.x + 20, coinCoords.y, ' x ' + gold, {font: 'Gloria Hallelujah', fill: FONT_COLOR, align: 'left', fontSize: '12px'});
+        coinText = game.add.text(coinCoords.x + 20, coinCoords.y, ' x ' + gold + "/" + GOLD_TO_WIN, {font: 'Gloria Hallelujah', fill: FONT_COLOR, align: 'left', fontSize: '12px'});
         coinText.fixedToCamera = true;
 
         // add hearts
@@ -465,7 +469,7 @@ export default function playState(game) {
     function updateStatOverlay() {
         coinText.x = COIN_STAT_X + 20;
         coinText.y = COIN_STAT_Y.y; 
-        coinText.text = ' x ' + gold;
+        coinText.text = ' x ' + gold + '/' + GOLD_TO_WIN;
 
         for(let i = 0; i < heartGroup.children.length; ++i) {
             let heart = heartGroup.getChildAt(i);
@@ -834,6 +838,20 @@ export default function playState(game) {
         } else {
             return 4;
         }
+    }
+
+    function hasBoughtAllItems() {
+        for(let i = 0; i < Object.keys(inventory).length; ++i) {
+            let itemName = Object.keys(inventory)[i];
+            if(itemName === "Swamp Bubble") {
+                if(!hasBoughtBubble) {
+                    return false;
+                }
+            } else if(inventory[itemName] < 1) {
+                return false;
+            }
+        }
+        return true;
     }
 
     return {preload, create, update};
