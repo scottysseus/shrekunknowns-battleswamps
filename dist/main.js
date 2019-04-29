@@ -493,7 +493,7 @@ var BASE_ENEMY = {
 
 var DONKEY = _objectSpread({}, BASE_ENEMY, {
   name: CREATURE_NAMES.DONKEY,
-  price: 20,
+  price: 30,
   baseSpeed: 200,
   baseHealth: 3,
   baseSpawnRate: 3600,
@@ -513,7 +513,7 @@ var FAIRY = _objectSpread({}, BASE_ENEMY, {
 
 var UNICORN = _objectSpread({}, BASE_ENEMY, {
   name: CREATURE_NAMES.UNICORN,
-  price: 40,
+  price: 60,
   baseSpeed: 150,
   baseHealth: 3,
   baseSpawnRate: 4200,
@@ -522,7 +522,7 @@ var UNICORN = _objectSpread({}, BASE_ENEMY, {
 
 var GNOME = _objectSpread({}, BASE_ENEMY, {
   name: CREATURE_NAMES.GNOME,
-  price: 20,
+  price: 30,
   baseSpeed: 100,
   baseHealth: 2,
   baseSpawnRate: 3600,
@@ -531,7 +531,7 @@ var GNOME = _objectSpread({}, BASE_ENEMY, {
 
 var PHOENIX = _objectSpread({}, BASE_ENEMY, {
   name: CREATURE_NAMES.PHOENIX,
-  price: 60,
+  price: 100,
   baseSpeed: 125,
   baseHealth: 2,
   baseSpawnRate: 4200,
@@ -549,7 +549,7 @@ var IMP = _objectSpread({}, BASE_ENEMY, {
 
 var GOBLIN = _objectSpread({}, BASE_ENEMY, {
   name: CREATURE_NAMES.GOBLIN,
-  price: 40,
+  price: 60,
   baseSpeed: 85,
   baseHealth: 4,
   baseSpawnRate: 4200,

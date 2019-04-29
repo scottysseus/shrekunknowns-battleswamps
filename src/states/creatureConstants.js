@@ -20,7 +20,7 @@ let BASE_ENEMY = {
 let DONKEY = {
     ...BASE_ENEMY,
     name: CREATURE_NAMES.DONKEY,
-    price: 20,
+    price: 30,
     baseSpeed: 200,
     baseHealth: 3,
     baseSpawnRate: 3600,
@@ -42,7 +42,7 @@ let FAIRY = {
 let UNICORN = {
     ...BASE_ENEMY,
     name: CREATURE_NAMES.UNICORN,
-    price: 40,
+    price: 60,
     baseSpeed: 150,
     baseHealth: 3,
     baseSpawnRate: 4200,
@@ -52,7 +52,7 @@ let UNICORN = {
 let GNOME = {
     ...BASE_ENEMY,
     name: CREATURE_NAMES.GNOME,
-    price: 20,
+    price: 30,
     baseSpeed: 100,
     baseHealth: 2,
     baseSpawnRate: 3600,
@@ -62,7 +62,7 @@ let GNOME = {
 let PHOENIX = {
     ...BASE_ENEMY,
     name: CREATURE_NAMES.PHOENIX,
-    price: 60,
+    price: 100,
     baseSpeed: 125,
     baseHealth: 2,
     baseSpawnRate: 4200,
@@ -82,7 +82,7 @@ let IMP = {
 let GOBLIN = {
     ...BASE_ENEMY,
     name: CREATURE_NAMES.GOBLIN,
-    price: 40,
+    price: 60,
     baseSpeed: 85,
     baseHealth: 4,
     baseSpawnRate: 4200,
