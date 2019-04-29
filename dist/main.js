@@ -861,7 +861,7 @@ function playState(game) {
   var ITEM_X = 324;
   var ITEM_Y = 10; // game stats
 
-  var level = 1; // groups
+  var level = 0; // groups
 
   var cursors;
   var groundPlatform; // characters
@@ -939,6 +939,7 @@ function playState(game) {
     game.stage.disableVisibilityChange = true;
     cursors = game.input.keyboard.createCursorKeys();
     addBackgroundScenery();
+    level = getLevelFromEnemiesSold();
     addEnemies();
     addShrek();
     addActionSprites(); //  We're going to be using physics, so enable the Arcade Physics system

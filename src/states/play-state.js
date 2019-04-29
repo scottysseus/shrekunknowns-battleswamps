@@ -28,7 +28,7 @@ export default function playState(game) {
     let ITEM_Y = 10;
 
     // game stats
-    let level = 1;
+    let level = 0;
 
     // groups
     let cursors;
@@ -112,6 +112,7 @@ export default function playState(game) {
         game.stage.disableVisibilityChange = true;
         cursors = game.input.keyboard.createCursorKeys();
         addBackgroundScenery();
+        level = getLevelFromEnemiesSold();
         addEnemies();
         addShrek();
         addActionSprites();
