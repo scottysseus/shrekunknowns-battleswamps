@@ -1,47 +1,28 @@
 import StateTransitionButton from "../common/StateTransitionButton";
 import {FONT_COLOR, ButtonStyle, DescriptionStyle} from "../common/constants";
 export default function instructionsState2(game) {
-
-    let donkeySprite;
-    let frame = 0;
     let keyDescriptionMap = {
-        'ARROW KEYS': 'Movement*.',
+        'ARROW KEYS': 'Movement.',
         'A': 'Attack creatures.',
         'S': 'Capture creatures.',
-        'SPACEBAR': 'Open shoppe menu**.'
+        'SPACEBAR': 'Open shoppe menu (while near shoppe).'
     };
 
 
-    let instructionsText = '*The DOWN key performs a bounce only with the Swamp Bubble\n  Power-up enabled.\n**Shrek needs to be standing at the Shoppe.';
+    let instructionsText = 'GOAL\n\nBuy all the items and earn 800 gold to buy back your swamp!';
     return {
         create: function () {
             StateTransitionButton(game, 60, 30, '< Back', "Instructions");
-            let nextButton = StateTransitionButton(game, game.width - 60, 30, 'Next >', "Instructions3");
+            let nextButton = StateTransitionButton(game, game.width - 60, 30, 'Next >', "Instructions2.5");
             nextButton.anchor.setTo(1, 0);
 
-            game.add.text(60, 90, "CONTROLS:", DescriptionStyle);
-            Object.keys(keyDescriptionMap).forEach((key, i) => {
-                game.add.text(60, 120 + (i * 18), key, DescriptionStyle);
-                game.add.text(240, 120 + (i * 18), keyDescriptionMap[key], DescriptionStyle);
-            });
-            game.add.text(60, 230, instructionsText, DescriptionStyle);
+            game.add.text(60, 90, instructionsText, DescriptionStyle);
 
-            game.add.text(60, 320, "COMBAT:", DescriptionStyle);
-            let donkeyY = 350;
-            donkeySprite = game.add.sprite(90, donkeyY, "donkey");
-            donkeySprite.animations.add("donkeyWalk", [0, 1, 2, 0], 12, true);
-            game.add.text(200, donkeyY, "Attacking creatures damages them. Critically\n" +
-                                        "damaged creatures can be captured with the\n" +
-                                        "net. Creatures flash when critically damaged.\n" +
-                                        "Hitting a critically damaged\n" +
-                                        "creature destroys it.", DescriptionStyle);
-        },
-        update: function() {
-            ++frame;
-            donkeySprite.alpha = frame % 4 >= 2 ? 0.1 : 1;
-            if(frame > 2000000000) {
-                frame = 0;
-            }
+            game.add.text(60, 230, "CONTROLS", DescriptionStyle);
+            Object.keys(keyDescriptionMap).forEach((key, i) => {
+                game.add.text(60, 280 + (i * 18), key, DescriptionStyle);
+                game.add.text(240, 280 + (i * 18), keyDescriptionMap[key], DescriptionStyle);
+            });
         }
     };
 }

@@ -347,12 +347,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _states_about_state__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./states/about-state */ "./src/states/about-state.js");
 /* harmony import */ var _states_instructions_state__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./states/instructions-state */ "./src/states/instructions-state.js");
 /* harmony import */ var _states_instructions_state2__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./states/instructions-state2 */ "./src/states/instructions-state2.js");
-/* harmony import */ var _states_instructions_state3__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./states/instructions-state3 */ "./src/states/instructions-state3.js");
-/* harmony import */ var _states_instructions_state4__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./states/instructions-state4 */ "./src/states/instructions-state4.js");
-/* harmony import */ var _states_game_over_state__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./states/game-over-state */ "./src/states/game-over-state.js");
-/* harmony import */ var _states_asset_load_state__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./states/asset-load-state */ "./src/states/asset-load-state.js");
-/* harmony import */ var _states_font_load_state__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./states/font-load-state */ "./src/states/font-load-state.js");
-/* harmony import */ var _states_victory_state__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./states/victory-state */ "./src/states/victory-state.js");
+/* harmony import */ var _states_instructions_state2_5__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./states/instructions-state2_5 */ "./src/states/instructions-state2_5.js");
+/* harmony import */ var _states_instructions_state3__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./states/instructions-state3 */ "./src/states/instructions-state3.js");
+/* harmony import */ var _states_instructions_state4__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./states/instructions-state4 */ "./src/states/instructions-state4.js");
+/* harmony import */ var _states_game_over_state__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./states/game-over-state */ "./src/states/game-over-state.js");
+/* harmony import */ var _states_asset_load_state__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./states/asset-load-state */ "./src/states/asset-load-state.js");
+/* harmony import */ var _states_font_load_state__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./states/font-load-state */ "./src/states/font-load-state.js");
+/* harmony import */ var _states_victory_state__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./states/victory-state */ "./src/states/victory-state.js");
+
 
 
 
@@ -368,12 +370,13 @@ game.state.add("Entry", Object(_states_entry_state__WEBPACK_IMPORTED_MODULE_0__[
 game.state.add("About", Object(_states_about_state__WEBPACK_IMPORTED_MODULE_1__["default"])(game));
 game.state.add("Instructions", Object(_states_instructions_state__WEBPACK_IMPORTED_MODULE_2__["default"])(game));
 game.state.add("Instructions2", Object(_states_instructions_state2__WEBPACK_IMPORTED_MODULE_3__["default"])(game));
-game.state.add("Instructions3", Object(_states_instructions_state3__WEBPACK_IMPORTED_MODULE_4__["default"])(game));
-game.state.add("Instructions4", Object(_states_instructions_state4__WEBPACK_IMPORTED_MODULE_5__["default"])(game));
-game.state.add("GameOver", Object(_states_game_over_state__WEBPACK_IMPORTED_MODULE_6__["default"])(game));
-game.state.add("AssetLoad", Object(_states_asset_load_state__WEBPACK_IMPORTED_MODULE_7__["default"])(game));
-game.state.add("FontLoad", Object(_states_font_load_state__WEBPACK_IMPORTED_MODULE_8__["default"])(game));
-game.state.add("Victory", Object(_states_victory_state__WEBPACK_IMPORTED_MODULE_9__["default"])(game));
+game.state.add("Instructions2.5", Object(_states_instructions_state2_5__WEBPACK_IMPORTED_MODULE_11__["default"])(game));
+game.state.add("Instructions3", Object(_states_instructions_state3__WEBPACK_IMPORTED_MODULE_5__["default"])(game));
+game.state.add("Instructions4", Object(_states_instructions_state4__WEBPACK_IMPORTED_MODULE_6__["default"])(game));
+game.state.add("GameOver", Object(_states_game_over_state__WEBPACK_IMPORTED_MODULE_7__["default"])(game));
+game.state.add("AssetLoad", Object(_states_asset_load_state__WEBPACK_IMPORTED_MODULE_8__["default"])(game));
+game.state.add("FontLoad", Object(_states_font_load_state__WEBPACK_IMPORTED_MODULE_9__["default"])(game));
+game.state.add("Victory", Object(_states_victory_state__WEBPACK_IMPORTED_MODULE_10__["default"])(game));
 game.state.start("FontLoad");
 
 /***/ }),
@@ -730,7 +733,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function instructionsState(game) {
-  var instructionsText = '\n\n Shrek needs more gold to buy back his swamp!\n\n' + 'The Royal Guards are paying a pretty penny in exchange\n for mythical Creatures...\n\n' + "What's an Orge to do? Go to the would-be-king to talk?\n\n...Nah rounding up these things seems way easier.\n\n";
+  var instructionsText = 'PREMISE\n\n Shrek needs more gold to buy back his swamp!\n\n' + 'The Royal Guards are paying a pretty penny in exchange\n for mythical Creatures...\n\n' + "What's an Orge to do? Go to the would-be-king to talk?\n\n...Nah rounding up these things seems way easier.\n\n";
   return {
     create: function create() {
       Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 60, 30, '< Back', "Entry");
@@ -758,31 +761,57 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function instructionsState2(game) {
-  var donkeySprite;
-  var frame = 0;
   var keyDescriptionMap = {
-    'ARROW KEYS': 'Movement*.',
+    'ARROW KEYS': 'Movement.',
     'A': 'Attack creatures.',
     'S': 'Capture creatures.',
-    'SPACEBAR': 'Open shoppe menu**.'
+    'SPACEBAR': 'Open shoppe menu (while near shoppe).'
   };
-  var instructionsText = '*The DOWN key performs a bounce only with the Swamp Bubble\n  Power-up enabled.\n**Shrek needs to be standing at the Shoppe.';
+  var instructionsText = 'GOAL\n\nBuy all the items and earn 800 gold to buy back your swamp!';
   return {
     create: function create() {
       Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 60, 30, '< Back', "Instructions");
+      var nextButton = Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, game.width - 60, 30, 'Next >', "Instructions2.5");
+      nextButton.anchor.setTo(1, 0);
+      game.add.text(60, 90, instructionsText, _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      game.add.text(60, 230, "CONTROLS", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      Object.keys(keyDescriptionMap).forEach(function (key, i) {
+        game.add.text(60, 280 + i * 18, key, _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+        game.add.text(240, 280 + i * 18, keyDescriptionMap[key], _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      });
+    }
+  };
+}
+
+/***/ }),
+
+/***/ "./src/states/instructions-state2_5.js":
+/*!*********************************************!*\
+  !*** ./src/states/instructions-state2_5.js ***!
+  \*********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return instructionsState2; });
+/* harmony import */ var _common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/StateTransitionButton */ "./src/common/StateTransitionButton.js");
+/* harmony import */ var _common_constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/constants */ "./src/common/constants.js");
+
+
+function instructionsState2(game) {
+  var donkeySprite;
+  var frame = 0;
+  return {
+    create: function create() {
+      Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 60, 30, '< Back', "Instructions2");
       var nextButton = Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, game.width - 60, 30, 'Next >', "Instructions3");
       nextButton.anchor.setTo(1, 0);
-      game.add.text(60, 90, "CONTROLS:", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
-      Object.keys(keyDescriptionMap).forEach(function (key, i) {
-        game.add.text(60, 120 + i * 18, key, _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
-        game.add.text(240, 120 + i * 18, keyDescriptionMap[key], _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
-      });
-      game.add.text(60, 230, instructionsText, _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
-      game.add.text(60, 320, "COMBAT:", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
-      var donkeyY = 350;
+      game.add.text(60, 90, "COMBAT", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      var donkeyY = 200;
       donkeySprite = game.add.sprite(90, donkeyY, "donkey");
       donkeySprite.animations.add("donkeyWalk", [0, 1, 2, 0], 12, true);
-      game.add.text(200, donkeyY, "Attacking creatures damages them. Critically\n" + "damaged creatures can be captured with the\n" + "net. Creatures flash when critically damaged.\n" + "Hitting a critically damaged\n" + "creature destroys it.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
+      game.add.text(200, 150, "Attacking creatures damages them. Critically\n" + "damaged creatures can be captured with the\n" + "net. Creatures flash when critically damaged.\n" + "Hitting a critically damaged\n" + "creature destroys it.", _common_constants__WEBPACK_IMPORTED_MODULE_1__["DescriptionStyle"]);
     },
     update: function update() {
       ++frame;
