@@ -2,13 +2,18 @@ const CREATURE_NAMES = {
     DONKEY: "donkey",
     FAIRY: "fairy",
     GNOME: "gnome",
-    UNICORN: "unicorn"
+    UNICORN: "unicorn",
+    PHOENIX: "phoenix",
+    IMP: "imp",
+    GOBLIN: "goblinWarrior"
 }
 
 let BASE_ENEMY = {
     turnProb: 0.02,
     knockbackVelocityX: 200,
     knockbackVelocityY: -200,
+    spawnHeight: 0, // height above ground level
+    spawnDistance: 0, // minimum spawn distance from store
 };
 
 let DONKEY = {
@@ -49,7 +54,34 @@ let GNOME = {
     baseSpawnRate: 1200,
 };
 
-const CREATURE_LIST = [DONKEY, FAIRY, GNOME, UNICORN];
+let PHOENIX = {
+    ...BASE_ENEMY,
+    name: CREATURE_NAMES.PHOENIX,
+    price: 100,
+    baseSpeed: 125,
+    baseHealth: 2,
+    baseSpawnRate: 1200,
+};
+
+let IMP = {
+    ...BASE_ENEMY,
+    name: CREATURE_NAMES.IMP,
+    price: 100,
+    baseSpeed: 125,
+    baseHealth: 1,
+    baseSpawnRate: 1200,
+};
+
+let GOBLIN = {
+    ...BASE_ENEMY,
+    name: CREATURE_NAMES.GOBLIN,
+    price: 100,
+    baseSpeed: 85,
+    baseHealth: 4,
+    baseSpawnRate: 1200,
+};
+
+const CREATURE_LIST = [DONKEY, FAIRY, GNOME, UNICORN, PHOENIX];
 const CREATURE_NAME_MAP = {};
 
 CREATURE_LIST.forEach((creature) => {
@@ -62,6 +94,7 @@ const CreatureConstants = {
     UNICORN,
     FAIRY,
     GNOME,
+    PHOENIX,
     CREATURE_LIST,
     CREATURE_NAME_MAP
 };

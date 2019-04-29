@@ -6,8 +6,8 @@ export default function instructionsState(game) {
                          + 'Whats an Orge to do? Go to the would-be-king to talk?\n\n...Nah rounding up these things seems way easier.\n\n';
     return {
         create: function () {
-            StateTransitionButton(game, 60, 30, '< Back', "Entry");
-            let nextButton = StateTransitionButton(game, game.width - 60, 30, 'Next >', "Instructions2");
+            StateTransitionButton(game, 60, 30, '< Back', "Instructions");
+            let nextButton = StateTransitionButton(game, game.width - 60, 30, 'Next >', "Play");
             nextButton.anchor.setTo(1, 0);
             let generatedText = game.add.text(60, 90, instructionsText, DescriptionStyle);
         }

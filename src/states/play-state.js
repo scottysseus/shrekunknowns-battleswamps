@@ -8,17 +8,16 @@ export default function playState(game) {
 
     const GRAVITY = 600*2;
     const BOUNCE = 0;
-    
+    const MAX_NUM_OF_FAIRIES = 10;
+    const MAX_NUM_OF_DONKEYS = 4;
 
     const ITEM_MAP = {
-        "Fairie Dust": {icon: "fairieDustIcon" , descr: "Slows fall speed & adds a double jump", cost: 100},
-        "Big Fist": {icon: "bigFistIcon" , descr: "Attacks do more damage and knocks back enemies farther", cost: 200},
+        "Fairie Dust": {icon: "fairieDustIcon" , descr: "Slows fall speed", cost: 100},
+        "Big Fist": {icon: "bigFistIcon" , descr: "Higher damage and knock back", cost: 200},
         "Swamp Bubble": {icon: "swampBubbleIcon" , descr: "Takes one free hit & adds bounce ability", cost: 50},
         "Speed": {icon: "speedIcon" , descr: "Doubles movement speed", cost: 500},
-        "Fart in a Jar": {icon: "fartJarIcon" , descr: "Add double-jump ability", cost: 500},
+        "Fart in a Jar": {icon: "fartJarIcon" , descr: "Adds double-jump ability", cost: 500},
     };
-
-
 
     // locations
     let GROUND_LEVEL;
@@ -52,7 +51,7 @@ export default function playState(game) {
     let actionSprites = {};
     let actionSpriteProps = {'chop': {
             speed: 36,
-            collisionCheckFunction: checkChopCollision
+            collisionCheckFunction: () => { checkChopCollision(false); }
         }, 
         'net': {
             speed: 12,
@@ -60,7 +59,7 @@ export default function playState(game) {
         }, 
         'bigfist': {
             speed: 18,
-            collisionCheckFunction: () => {}
+            collisionCheckFunction: () => { checkChopCollision(true); }
         }
     };
     let coinIcon, coinText, heartGroup, iconBag;
@@ -68,6 +67,8 @@ export default function playState(game) {
     let isShrekActing = false;
     let doubleJumped = false;
     let jumpKeyWasPressed = false;
+    let numOfDonkeysAlive = 0;
+    let numOfFairiesAlive = 0;
 
     let storeUI;
     let choiceLabel;
@@ -81,6 +82,9 @@ export default function playState(game) {
     let bubbleBounceSound;
     let bubblePopSound;
     let fartSound;
+    let hitSound;
+    let hitBigSound;
+    let loserFartSound;
 
     // flags
     let isShrekFacingLeft = true;
@@ -88,7 +92,7 @@ export default function playState(game) {
     let isStoreOpen = false;
 
     // player stats
-    let gold = 1000;
+    let gold = 10000;
     let inventory = {};
     let inventoryDisplay = {};
     let capturedCreatures = {};
@@ -99,48 +103,11 @@ export default function playState(game) {
     let ACTION_KEY;
     let NET_KEY;
 
+    let emitterManager;
+    let fairieDustEmitter;
+
     function preload() {
-        game.load.image('ground', 'src/assets/ground.png');
-        game.load.image('groundTop', 'src/assets/groundTop.png');
-        game.load.spritesheet('shrek', 'src/assets/shrek.png', 126/3, 72);
-        game.load.spritesheet('donkey', 'src/assets/donkey.png', 192/4, 48);
-        game.load.spritesheet('fairy', 'src/assets/fairy.png', 56/4, 17);
-        game.load.image('tree1', 'src/assets/tree1.png');
-        game.load.image('tree2', 'src/assets/tree2.png');
-        game.load.image('tree3', 'src/assets/tree3.png');
-        game.load.image("berryBush", "src/assets/berryBush.png");
-        game.load.image("store", "src/assets/store.png");
-        game.load.image("forestBackground", "src/assets/forestBackground.png");
-        game.load.image("storeBackground", "src/assets/storeBackground.png");
-        game.load.spritesheet("chop", "src/assets/chop.png", 120/3, 64);
-        game.load.spritesheet("net", "src/assets/net.png", 288/3, 108);
-        game.load.spritesheet("bigfist", "src/assets/bigfist.png", 192/3, 64);
-        game.load.image("sky", "src/assets/sky.png");
-        game.load.image("heart", "src/assets/heart.png");
-        game.load.spritesheet("coin", "src/assets/coin.png", 128/8, 16);
-        game.load.image("swampBubble", "src/assets/swampBubble.png");
-
-        // icons
-        game.load.image("donkeyIcon", "src/assets/donkeyIcon.png");
-        game.load.image("fairyIcon", "src/assets/fairyIcon.png");
-        game.load.image("gnomeIcon", "src/assets/gnomeIcon.png");
-        game.load.image("iconBag", "src/assets/iconBag.png");
-        game.load.image("iconBagOverlay", "src/assets/iconBagOverlay.png");
-
-        game.load.image("swampBubbleIcon", "src/assets/swampBubbleIcon.png");
-        game.load.image("fairieDustIcon", "src/assets/fairieDustIcon.png");
-        game.load.image("bigFistIcon", "src/assets/bigFistIcon.png");
-        game.load.image("speedIcon", "src/assets/speedIcon.png");
-        game.load.image("fartJarIcon", "src/assets/fartJarIcon.png");
-
-        // sounds
-        game.load.audio("net", "src/assets/sound/net.wav");
-        game.load.audio("purchase", "src/assets/sound/cashreg.wav");
-        game.load.audio("denied", "src/assets/sound/denied.wav");
-        game.load.audio("bubbleGet", "src/assets/sound/bubbleget.wav");
-        game.load.audio("bubbleBounce", "src/assets/sound/bubblebounce.wav");
-        game.load.audio("bubblePop", "src/assets/sound/bubblePop.wav");
-        game.load.audio("fart", "src/assets/sound/fart.wav");
+        
     }
     
     function create() {
@@ -167,7 +134,12 @@ export default function playState(game) {
         SPACE_BAR.onUp.add(toggleStore, this);
 
         ACTION_KEY = game.input.keyboard.addKey(Phaser.Keyboard.A);
-        ACTION_KEY.onUp.add(() => {animateAction('chop');}, this);
+        ACTION_KEY.onUp.add(() => {
+            if (inventory["Big Fist"] === 1)
+                animateAction('bigfist');
+            else
+                animateAction('chop');
+        }, this);
         NET_KEY = game.input.keyboard.addKey(Phaser.Keyboard.S);
         NET_KEY.onUp.add(() => {animateAction('net')}, this);
         createInventory();
@@ -178,6 +150,9 @@ export default function playState(game) {
         bubbleBounceSound = game.add.audio("bubbleBounce");
         bubblePopSound = game.add.audio("bubblePop");
         fartSound = game.add.audio("fart");
+        hitSound = game.add.audio("hit");
+        hitBigSound = game.add.audio("hitBig");
+        loserFartSound = game.add.audio("loserFart");
     }
     
     
@@ -285,12 +260,13 @@ export default function playState(game) {
     }
 
     function addEnemies() {
-        enemies = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = numOfFairiesAlive; i < MAX_NUM_OF_FAIRIES; i++) {
             spawnEnemy(CreatureConstants.FAIRY);
+            numOfFairiesAlive++;
         }
-        for (let i = 0; i < 4; i++) {
+        for (let i = numOfDonkeysAlive; i < MAX_NUM_OF_DONKEYS; i++) {
             spawnEnemy(CreatureConstants.DONKEY);
+            numOfDonkeysAlive++;
         }
     }
 
@@ -374,6 +350,7 @@ export default function playState(game) {
         for(var i = 0; i < items.length; ++i) {
             let itemName = items[i];
             const itemDesc = ITEM_MAP[items[i]].descr;
+            let itemCost = ITEM_MAP[items[i]].cost;
             let itemButton = ItemButton(game, coords.x, coords.y, itemName, () => {
                 // ensure player has enough currency to buy this item
                 if (validatePurchase(ITEM_MAP[itemName], itemName)) {
@@ -390,7 +367,7 @@ export default function playState(game) {
             });
             storeUI.add(itemButton);
 
-            let itemDescr = game.add.text(coords.x+25, coords.y+45, itemDesc, DescriptionStyle);
+            let itemDescr = game.add.text(coords.x+25, coords.y+45, itemDesc + " ($" + itemCost  + ")", DescriptionStyle);
             storeUI.add(itemDescr);
             coords.y += (MARGIN*3);
         }
@@ -483,6 +460,13 @@ export default function playState(game) {
             swampBubble.alpha = 0;
         }
 
+        if(inventory["Fairie Dust"] && !fairieDustEmitter) {
+            fairieDustEmitter = game.add.emitter(shrek.x, shrek.y-50, 200, 200);
+            fairieDustEmitter.makeParticles("fairieDust");
+            fairieDustEmitter.flow(1000, 300, 1, -1);
+            fairieDustEmitter.alpha = .35;
+        }
+
         if(isStoreOpen) {
             game.physics.arcade.collide(shrek, groundPlatform);
             shrek.body.velocity.x = 0;
@@ -497,6 +481,11 @@ export default function playState(game) {
         }
         swampBubble.x = shrek.x;
         swampBubble.y = shrek.y;
+
+        if (fairieDustEmitter) {
+            fairieDustEmitter.x = shrek.x;
+            fairieDustEmitter.y = shrek.y-75;
+        }
     }
 
     function getShrekRunSpeed() {
@@ -555,6 +544,8 @@ export default function playState(game) {
             }
             bouncing = false;
             doubleJumped = false;
+        } else if(inventory["Fairie Dust"]) {
+            shrek.body.gravity.y = GRAVITY / 2;
         }
         const currentDown = cursors.down.isDown;
         if (currentDown && !lastDown && !isOnGround && bouncing === false && inventory["Swamp Bubble"] === 1) {
@@ -660,6 +651,7 @@ export default function playState(game) {
         }
         health--;
         if(health < 1) {
+            loserFartSound.play();
             game.state.start("GameOver");
         }
     }
@@ -742,8 +734,8 @@ export default function playState(game) {
         
     }
 
-    function checkChopCollision() {
-        const chop = actionSprites['chop'];
+    const checkChopCollision = (isBigFist) => {
+        const chop = isBigFist ? actionSprites['bigfist'] : actionSprites['chop'];
         const chopSprite = chop.sprite;
 
         enemies.forEach((enemy) => {
@@ -754,10 +746,15 @@ export default function playState(game) {
             if (foundCollision) {
                 chop.collidedEnemies.push(enemy);
                 enemy.health = enemy.health - 1;
+                if (isBigFist) {
+                    enemy.health = Math.min(0, enemy.health);
+                    hitBigSound.play();
+                } else {
+                    hitSound.play();
+                }
                 if(enemy.health === 0) {
                     enemy.capturableTimer = CAPTURABLE_DURATION;
                 }
-                console.log("hit a mufukka");
                 knockbackSprite(enemy, shrek);
             }
         });
@@ -765,7 +762,18 @@ export default function playState(game) {
 
     function destroyEnemy(enemy) {
         enemies.splice(enemies.indexOf(enemy), 1);
+        switch (enemy.name) {
+            case "donkey":
+                numOfDonkeysAlive--;
+            break;
+            case "fairy":
+                numOfFairiesAlive--;
+                break;
+            default:
+                break
+        }
         enemy.destroy();
+        game.time.events.add(Phaser.Timer.SECOND * 4, addEnemies);
     }
 
     return {preload, create, update};
