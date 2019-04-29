@@ -716,7 +716,7 @@ __webpack_require__.r(__webpack_exports__);
 function instructionsState3(game) {
   return {
     create: function create() {
-      Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 60, 30, '< Back', "Instructions3");
+      Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 60, 30, '< Back', "Instructions2");
       game.state.add('Play', Object(_play_state__WEBPACK_IMPORTED_MODULE_2__["default"])(game));
       var nextButton = Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, game.width - 60, 30, 'Next >', "Instructions4");
       nextButton.anchor.setTo(1, 0);

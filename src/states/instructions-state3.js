@@ -5,7 +5,7 @@ import CreatureConstants from "./creatureConstants";
 export default function instructionsState3(game) {
     return {
         create: function () {
-            StateTransitionButton(game, 60, 30, '< Back', "Instructions3");
+            StateTransitionButton(game, 60, 30, '< Back', "Instructions2");
             game.state.add('Play', playState(game));
             let nextButton = StateTransitionButton(game, game.width - 60, 30, 'Next >', "Instructions4");
             nextButton.anchor.setTo(1, 0);
