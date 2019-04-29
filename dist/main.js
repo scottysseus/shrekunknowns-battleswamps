@@ -255,15 +255,15 @@ var ITEM_MAP = {
     descr: "Doubles movement speed",
     cost: 40
   },
-  "Fart in a Jar": {
-    icon: "fartJarIcon",
-    descr: "Adds double-jump ability",
-    cost: 80
-  },
   "Swamp Bubble": {
     icon: "swampBubbleIcon",
     descr: "Takes one free hit & adds bounce ability",
-    cost: 150
+    cost: 60
+  },
+  "Fart in a Jar": {
+    icon: "fartJarIcon",
+    descr: "Adds double-jump ability",
+    cost: 100
   },
   "Fairie Dust": {
     icon: "fairieDustIcon",
