@@ -41,7 +41,7 @@ export default function playState(game) {
     const SHREK_KNOCKBACK_TIME = 45;
     const SHREK_KNOCKBACK_SPEED = 200;
     let actionSprites = {};
-    let actionArmFromRight = 16; // distance from shoulder socket to rightside of sprite frame
+    let actionArmFromRight = 14; // distance from shoulder socket to rightside of sprite frame
     let actionSpriteProps = {'chop': {
             speed: 30,
             collisionCheckFunction: () => { checkChopCollision(false); }
@@ -85,7 +85,7 @@ export default function playState(game) {
     let isStoreOpen = false;
 
     // player stats
-    let gold = 0;
+    let gold = 1000;
     let inventory = {};
     let inventoryDisplay = {};
     let capturedCreatures = [];
@@ -133,7 +133,7 @@ export default function playState(game) {
 
         ACTION_KEY = game.input.keyboard.addKey(Phaser.Keyboard.A);
         ACTION_KEY.onUp.add(() => {
-            if (inventory["Big Fist"] === 1)
+            if (inventory["Big Onion"] === 1)
                 animateAction('bigfist');
             else
                 animateAction('chop');
@@ -710,7 +710,7 @@ export default function playState(game) {
         const template = sprite.template || {};
         let kbX = template.knockbackVelocityX;
         let kbY = template.knockbackVelocityY;
-        if (adversary === shrek && inventory["Big Fist"] === 1) {
+        if (adversary === shrek && inventory["Big Onion"] === 1) {
             kbX *= 1;
             kbY *= 5;
         }

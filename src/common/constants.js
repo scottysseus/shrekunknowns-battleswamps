@@ -8,5 +8,5 @@ export const ITEM_MAP = {
     "Swamp Bubble": {icon: "swampBubbleIcon" , descr: "Takes one free hit & adds bounce ability", cost: 60},
     "Fart in a Jar": {icon: "fartJarIcon" , descr: "Adds double-jump ability", cost: 100},
     "Fairie Dust": {icon: "fairieDustIcon" , descr: "Slows fall speed", cost: 220},
-    "Big Fist": {icon: "bigFistIcon" , descr: "Higher damage and knock back", cost: 300},
+    "Big Onion": {icon: "bigFistIcon" , descr: "Higher damage and knock back", cost: 300},
 };

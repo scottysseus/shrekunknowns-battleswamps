@@ -19,7 +19,7 @@ export default function assetLoadState(game) {
         game.load.image("forestBackground", "src/assets/forestBackground.png");
         game.load.image("storeBackground", "src/assets/storeBackground.png");
         game.load.spritesheet("chop", "src/assets/chop.png", 68, 90);
-        game.load.spritesheet("bigfist", "src/assets/bigfist.png", 192/3, 64);
+        game.load.spritesheet("bigfist", "src/assets/bigfist.png", 90, 120);
         game.load.spritesheet("net", "src/assets/net.png", 110, 108);
         game.load.image("sky", "src/assets/sky.png");
         game.load.image("heart", "src/assets/heart.png");

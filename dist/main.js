@@ -270,7 +270,7 @@ var ITEM_MAP = {
     descr: "Slows fall speed",
     cost: 220
   },
-  "Big Fist": {
+  "Big Onion": {
     icon: "bigFistIcon",
     descr: "Higher damage and knock back",
     cost: 300
@@ -411,7 +411,7 @@ function assetLoadState(game) {
     game.load.image("forestBackground", "src/assets/forestBackground.png");
     game.load.image("storeBackground", "src/assets/storeBackground.png");
     game.load.spritesheet("chop", "src/assets/chop.png", 68, 90);
-    game.load.spritesheet("bigfist", "src/assets/bigfist.png", 192 / 3, 64);
+    game.load.spritesheet("bigfist", "src/assets/bigfist.png", 90, 120);
     game.load.spritesheet("net", "src/assets/net.png", 110, 108);
     game.load.image("sky", "src/assets/sky.png");
     game.load.image("heart", "src/assets/heart.png");
@@ -872,7 +872,7 @@ function playState(game) {
   var SHREK_KNOCKBACK_TIME = 45;
   var SHREK_KNOCKBACK_SPEED = 200;
   var actionSprites = {};
-  var actionArmFromRight = 16; // distance from shoulder socket to rightside of sprite frame
+  var actionArmFromRight = 14; // distance from shoulder socket to rightside of sprite frame
 
   var actionSpriteProps = {
     'chop': {
@@ -918,7 +918,7 @@ function playState(game) {
   var bouncing = false;
   var isStoreOpen = false; // player stats
 
-  var gold = 0;
+  var gold = 1000;
   var inventory = {};
   var inventoryDisplay = {};
   var capturedCreatures = [];
@@ -957,7 +957,7 @@ function playState(game) {
     SPACE_BAR.onUp.add(toggleStore, this);
     ACTION_KEY = game.input.keyboard.addKey(Phaser.Keyboard.A);
     ACTION_KEY.onUp.add(function () {
-      if (inventory["Big Fist"] === 1) animateAction('bigfist');else animateAction('chop');
+      if (inventory["Big Onion"] === 1) animateAction('bigfist');else animateAction('chop');
     }, this);
     NET_KEY = game.input.keyboard.addKey(Phaser.Keyboard.S);
     NET_KEY.onUp.add(function () {
@@ -1560,7 +1560,7 @@ function playState(game) {
     var kbX = template.knockbackVelocityX;
     var kbY = template.knockbackVelocityY;
 
-    if (adversary === shrek && inventory["Big Fist"] === 1) {
+    if (adversary === shrek && inventory["Big Onion"] === 1) {
       kbX *= 1;
       kbY *= 5;
     }
