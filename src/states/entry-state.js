@@ -13,7 +13,7 @@ export default function entryState(game) {
         },
  
         create: function() {
-            TitleText(game, game.width / 2, TITLE_Y, "Shrek Unknown's\nBattleSwamps");
+            TitleText(game, game.width / 2, TITLE_Y, "ShrekUnknown's\nBattleSwamps");
 
             StateTransitionButton(game, 30,TITLE_Y + 72, "Play", "Instructions");
             StateTransitionButton(game, 30, TITLE_Y + 72 * 2,'About', "About");

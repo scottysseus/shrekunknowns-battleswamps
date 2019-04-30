@@ -639,7 +639,7 @@ function entryState(game) {
     preload: function preload() {},
     init: function init() {},
     create: function create() {
-      Object(_common_TitleText__WEBPACK_IMPORTED_MODULE_1__["default"])(game, game.width / 2, TITLE_Y, "Shrek Unknown's\nBattleSwamps");
+      Object(_common_TitleText__WEBPACK_IMPORTED_MODULE_1__["default"])(game, game.width / 2, TITLE_Y, "ShrekUnknown's\nBattleSwamps");
       Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 30, TITLE_Y + 72, "Play", "Instructions");
       Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 30, TITLE_Y + 72 * 2, 'About', "About");
     },
