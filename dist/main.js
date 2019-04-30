@@ -347,7 +347,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _states_about_state__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./states/about-state */ "./src/states/about-state.js");
 /* harmony import */ var _states_instructions_state__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./states/instructions-state */ "./src/states/instructions-state.js");
 /* harmony import */ var _states_instructions_state2__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./states/instructions-state2 */ "./src/states/instructions-state2.js");
-/* harmony import */ var _states_instructions_state2_5__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./states/instructions-state2_5 */ "./src/states/instructions-state2_5.js");
+/* harmony import */ var _states_instructions_state2_5__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./states/instructions-state2_5 */ "./src/states/instructions-state2_5.js");
 /* harmony import */ var _states_instructions_state3__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./states/instructions-state3 */ "./src/states/instructions-state3.js");
 /* harmony import */ var _states_instructions_state4__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./states/instructions-state4 */ "./src/states/instructions-state4.js");
 /* harmony import */ var _states_game_over_state__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./states/game-over-state */ "./src/states/game-over-state.js");
@@ -370,7 +370,7 @@ game.state.add("Entry", Object(_states_entry_state__WEBPACK_IMPORTED_MODULE_0__[
 game.state.add("About", Object(_states_about_state__WEBPACK_IMPORTED_MODULE_1__["default"])(game));
 game.state.add("Instructions", Object(_states_instructions_state__WEBPACK_IMPORTED_MODULE_2__["default"])(game));
 game.state.add("Instructions2", Object(_states_instructions_state2__WEBPACK_IMPORTED_MODULE_3__["default"])(game));
-game.state.add("Instructions2.5", Object(_states_instructions_state2_5__WEBPACK_IMPORTED_MODULE_11__["default"])(game));
+game.state.add("Instructions2.5", Object(_states_instructions_state2_5__WEBPACK_IMPORTED_MODULE_4__["default"])(game));
 game.state.add("Instructions3", Object(_states_instructions_state3__WEBPACK_IMPORTED_MODULE_5__["default"])(game));
 game.state.add("Instructions4", Object(_states_instructions_state4__WEBPACK_IMPORTED_MODULE_6__["default"])(game));
 game.state.add("GameOver", Object(_states_game_over_state__WEBPACK_IMPORTED_MODULE_7__["default"])(game));
@@ -483,7 +483,10 @@ function assetLoadState(game) {
     game.load.audio("fart", "src/assets/sound/fart.wav");
     game.load.audio("hit", "src/assets/sound/hit.wav");
     game.load.audio("hitBig", "src/assets/sound/hit2.wav");
-    game.load.audio("loserFart", "src/assets/sound/loserFart.wav");
+    game.load.audio("loserFart", "src/assets/sound/loserFart.wav"); // music
+
+    game.load.audio('musicIntro', 'src/assets/sound/shrek-intro.ogg');
+    game.load.audio('musicLoop', 'src/assets/sound/shrek-loop.ogg');
   }
 
   function create() {
@@ -1031,7 +1034,9 @@ function playState(game) {
   var fartSound;
   var hitSound;
   var hitBigSound;
-  var loserFartSound; // flags
+  var loserFartSound;
+  var musicIntro;
+  var musicLoop; // flags
 
   var isShrekFacingLeft = true;
   var bouncing = false;
@@ -1093,6 +1098,12 @@ function playState(game) {
     hitSound = game.add.audio("hit");
     hitBigSound = game.add.audio("hitBig");
     loserFartSound = game.add.audio("loserFart");
+    musicIntro = game.add.audio('musicIntro');
+    musicLoop = game.add.audio('musicLoop', 1, true);
+    musicIntro.onStop.addOnce(function () {
+      musicLoop.play();
+    });
+    musicIntro.play();
     initSpawnTimeMap();
   }
 
@@ -1674,6 +1685,8 @@ function playState(game) {
 
     if (health < 1) {
       loserFartSound.play();
+      musicIntro.stop();
+      musicLoop.stop();
       game.state.start("GameOver");
     }
   }

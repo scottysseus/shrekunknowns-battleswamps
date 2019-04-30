@@ -80,6 +80,9 @@ export default function playState(game) {
     let hitBigSound;
     let loserFartSound;
 
+    let musicIntro;
+    let musicLoop;
+
     // flags
     let isShrekFacingLeft = true;
     let bouncing = false;
@@ -152,6 +155,13 @@ export default function playState(game) {
         hitSound = game.add.audio("hit");
         hitBigSound = game.add.audio("hitBig");
         loserFartSound = game.add.audio("loserFart");
+
+        musicIntro = game.add.audio('musicIntro');
+        musicLoop = game.add.audio('musicLoop', 1, true);
+        musicIntro.onStop.addOnce(() => {
+            musicLoop.play();
+        });
+        musicIntro.play();
 
         initSpawnTimeMap();
     }
@@ -705,6 +715,8 @@ export default function playState(game) {
         health--;
         if(health < 1) {
             loserFartSound.play();
+            musicIntro.stop();
+            musicLoop.stop();
             game.state.start("GameOver");
         }
     }

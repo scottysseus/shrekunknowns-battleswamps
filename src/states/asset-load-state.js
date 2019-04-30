@@ -56,6 +56,10 @@ export default function assetLoadState(game) {
         game.load.audio("hit", "src/assets/sound/hit.wav");
         game.load.audio("hitBig", "src/assets/sound/hit2.wav");
         game.load.audio("loserFart", "src/assets/sound/loserFart.wav"); 
+
+        // music
+        game.load.audio('musicIntro', 'src/assets/sound/shrek-intro.ogg');
+        game.load.audio('musicLoop', 'src/assets/sound/shrek-loop.ogg');
     }
 
     function create() {
