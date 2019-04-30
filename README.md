@@ -46,9 +46,6 @@ Note to our fans: this game _is_ set in the same fictional universe as [our last
 * Shrek receives the gold equal to the value assigned to the Creature he turned in when he does so
 * The game ends when Shrek obtains a set amount of gold and the player wins
 
-*End goal
-
-
 ## NAME IDEAS
 
 * Gran Theft Donkey
