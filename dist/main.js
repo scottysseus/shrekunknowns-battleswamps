@@ -409,10 +409,10 @@ function aboutState(game) {
   return {
     create: function create() {
       Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_1__["default"])(game, 60, 30, '< Back', "Entry");
-      Object(_common_gitButton__WEBPACK_IMPORTED_MODULE_2__["default"])(game, 60, 250, '> scottyseus on GitHub <', "https://github.com/scottyseus/due-process");
+      Object(_common_gitButton__WEBPACK_IMPORTED_MODULE_2__["default"])(game, 60, 250, '> scottyseus on GitHub <', "https://github.com/scottyseus/shrekunknowns-battleswamps");
       Object(_common_gitButton__WEBPACK_IMPORTED_MODULE_2__["default"])(game, 60, 290, '> libjared on GitHub <', "https://github.com/libjared");
       Object(_common_gitButton__WEBPACK_IMPORTED_MODULE_2__["default"])(game, 60, 330, "> jronsomers GitHub", "https://github.com/jronSomers");
-      Object(_common_gitButton__WEBPACK_IMPORTED_MODULE_2__["default"])(game, 60, 370, '> Ludum Dare page <', "https://ldjam.com/events/ludum-dare/44/subs");
+      Object(_common_gitButton__WEBPACK_IMPORTED_MODULE_2__["default"])(game, 60, 370, '> Ludum Dare page <', "https://ldjam.com/events/ludum-dare/44/shrekunknowns-battleswamps");
       var aboutText = game.add.text(60, 90, textCrawl, textCrawlStyle);
     }
   };

@@ -12,10 +12,10 @@ export default function aboutState(game) {
     return {
         create: function() {
             StateTransitionButton(game, 60, 30, '< Back', "Entry");
-            GitButton(game, 60, 250, '> scottyseus on GitHub <', "https://github.com/scottyseus/due-process");
+            GitButton(game, 60, 250, '> scottyseus on GitHub <', "https://github.com/scottyseus/shrekunknowns-battleswamps");
             GitButton(game, 60, 290, '> libjared on GitHub <', "https://github.com/libjared");
             GitButton(game, 60, 330, "> jronsomers GitHub", "https://github.com/jronSomers");
-            GitButton(game, 60, 370, '> Ludum Dare page <', "https://ldjam.com/events/ludum-dare/44/subs");
+            GitButton(game, 60, 370, '> Ludum Dare page <', "https://ldjam.com/events/ludum-dare/44/shrekunknowns-battleswamps");
 
             const aboutText = game.add.text(60, 90, textCrawl, textCrawlStyle);
         }
