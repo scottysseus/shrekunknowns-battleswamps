@@ -632,8 +632,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return entryState; });
 /* harmony import */ var _common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/StateTransitionButton */ "./src/common/StateTransitionButton.js");
 /* harmony import */ var _common_TitleText__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/TitleText */ "./src/common/TitleText.js");
-/* harmony import */ var _play_state__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./play-state */ "./src/states/play-state.js");
-
 
 
 var TITLE_Y = 70;
@@ -642,6 +640,7 @@ function entryState(game) {
     preload: function preload() {},
     init: function init() {},
     create: function create() {
+      game.sound.stopAll();
       Object(_common_TitleText__WEBPACK_IMPORTED_MODULE_1__["default"])(game, game.width / 2, TITLE_Y, "ShrekUnknown's\nBattleSwamps");
       Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 30, TITLE_Y + 72, "Play", "Instructions");
       Object(_common_StateTransitionButton__WEBPACK_IMPORTED_MODULE_0__["default"])(game, 30, TITLE_Y + 72 * 2, 'About', "About");
