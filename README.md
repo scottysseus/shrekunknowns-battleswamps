@@ -1,6 +1,6 @@
 # ShrekUnknown's BattleSwamps
 
-[Play it here!](https://scottyseus.github.io/shrekunknowns-battleswamps/)
+[Play it here!](https://scottysseus.github.io/shrekunknowns-battleswamps/)
 
 A game created by scottyseus, libjared, jronSomers, and endlessDreamHero for Ludum Dare 44 (theme: _Your Life is Currency_).
 
